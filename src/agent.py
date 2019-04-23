@@ -1,7 +1,8 @@
 #!/usr/bin/python3
-
-# Using parser code by Zac Partrdige (Credits + Thank you)
-# 18/04/19
+# Sample starter bot by Zac Partridge
+# Contact me at z.partridge@unsw.edu.au
+# 06/04/19
+# Feel free to use this and modify it however you wish
 
 import socket
 import sys
@@ -14,15 +15,15 @@ import numpy as np
 
 # the boards are of size 10 because index 0 isn't used
 boards = np.zeros((10, 10), dtype="int8")
+s = [".","X","O"]
 curr = 0 # this is the current board to play in
 
 # print a row
 # This is just ported from game.c
 def print_board_row(board, a, b, c, i, j, k):
-    # The marking script doesn't seem to like this either, so just take it out to submit
-    print("", board[a][i], board[a][j], board[a][k], end = " | ")
-    print(board[b][i], board[b][j], board[b][k], end = " | ")
-    print(board[c][i], board[c][j], board[c][k])
+    print(" "+s[board[a][i]]+" "+s[board[a][j]]+" "+s[board[a][k]]+" | " \
+             +s[board[b][i]]+" "+s[board[b][j]]+" "+s[board[b][k]]+" | " \
+             +s[board[c][i]]+" "+s[board[c][j]]+" "+s[board[c][k]])
 
 # Print the entire board
 # This is just ported from game.c
@@ -40,16 +41,67 @@ def print_board(board):
     print_board_row(board, 7,8,9,7,8,9)
     print()
 
+def chooseMove():
+   possible = []
+   global boards
+   for i in range(1,10):
+      if boards[curr][i] == 0:
+         nextMove = boards.copy()
+         nextMove[curr][i] = 1 
+         if checkWin(nextMove,1):
+            print("winning move yeet")
+            win = []
+            win.append(i)
+            return win
+         else:
+          children = genChildren(nextMove)
+          for j in children:
+           if checkWin(j,2):
+               continue
+           else:
+               possible.append(i)
+   print(possible,curr)
+   return possible
+   
+def checkWin(current,player):
+
+   if (current[curr][1]==current[curr][2]==current[curr][3]==player or
+   current[curr][4]==current[curr][5]==current[curr][6]==player or
+   current[curr][7]==current[curr][8]==current[curr][9]==player or
+   current[curr][1]==current[curr][4]==current[curr][7]==player or
+   current[curr][2]==current[curr][5]==current[curr][8]==player or
+   current[curr][3]==current[curr][6]==current[curr][9]==player or
+   current[curr][1]==current[curr][5]==current[curr][9]==player or
+   current[curr][3]==current[curr][5]==current[curr][7]==player):
+      return True
+   return False
+   
+   #generate all children for a board
+def genChildren(board):
+   children = []
+   for i in range(1,9):
+      if board[curr][i] == 0:
+         child = board[:]
+         child[curr][i] = 2
+         children.append(child)
+   return children
+   
 # choose a move to play
 def play():
-    # print_board(boards)
-
+    print_board(boards)
+    goodMoves = chooseMove()
+    if (len(goodMoves)== 1):
+      n = goodMoves[0]
+    elif (len(goodMoves)!= 0):
+      n = goodMoves[0]
     # just play a random move for now
-    n = np.random.randint(1,9)
-    while boards[curr][n] != 0:
+    else:
+      n = np.random.randint(1,9)
+      while boards[curr][n] != 0:
         n = np.random.randint(1,9)
 
     # print("playing", n)
+    
     place(curr, n, 1)
     return n
 
