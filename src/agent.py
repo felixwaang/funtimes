@@ -54,15 +54,13 @@ def chooseMove():
                 win.append(i)
                 return win
             else:
-                # Possible moves for the next board
-                for j in range(1, 10):
-                    if boards[i][j] == 0:
-                        nextBoardMoves = boards.copy()
-                        nextBoardMoves[i][j] = 2
-                        if checkWin(nextBoardMoves, 2):
-                            continue
-                        else:
-                            possible.append(i)
+                # Check other person doesn't win next move
+                children = genChildren(nextMove, i, 2)
+                for j in children:
+                    if checkWin(j, 2):
+                        continue
+                    else:
+                        possible.append(i)
     print (possible,curr)
     return possible
    
@@ -79,13 +77,13 @@ def checkWin(current,player):
         return True
     return False
    
-   #generate all children for a board
-def genChildren(board):
+#generate all children for a board
+def genChildren(board, boardnum, player):
     children = []
-    for i in range(1,9):
-        if board[curr][i] == 0:
+    for i in range(1,10):
+        if board[boardnum][i] == 0:
             child = board[:]
-            child[curr][i] = 2
+            child[boardnum][i] = player
             children.append(child)
     return children
    
