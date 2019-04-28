@@ -42,9 +42,9 @@ def print_board(board):
     print()
 
 def chooseMove():
-   possible = []
-   global boards
-   for i in range(1,10):
+    possible = []
+    global boards
+    for i in range(1,10):
         if boards[curr][i] == 0:
             nextMove = boards.copy()
             nextMove[curr][i] = 1 
@@ -56,10 +56,10 @@ def chooseMove():
             else:
                 children = genChildren(nextMove)
                 for j in children:
-                if checkWin(j,2):
-                    continue
-                else:
-                    possible.append(i)
+                    if checkWin(j,2):
+                        continue
+                    else:
+                        possible.append(i)
     print (possible,curr)
     return possible
    
