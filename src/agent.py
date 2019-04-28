@@ -54,12 +54,15 @@ def chooseMove():
                 win.append(i)
                 return win
             else:
-                children = genChildren(nextMove)
-                for j in children:
-                    if checkWin(j,2):
-                        continue
-                    else:
-                        possible.append(i)
+                # Possible moves for the next board
+                for j in range(1, 10):
+                    if boards[i][j] == 0:
+                        nextBoardMoves = boards.copy()
+                        nextBoardMoves[i][j] = 2
+                        if checkWin(nextBoardMoves, 2):
+                            continue
+                        else:
+                            possible.append(i)
     print (possible,curr)
     return possible
    
@@ -91,9 +94,9 @@ def play():
     print_board(boards)
     goodMoves = chooseMove()
     if (len(goodMoves)== 1):
-        n = goodMoves[0]
+        n = np.bincount(goodMoves).argmax()
     elif (len(goodMoves)!= 0):
-        n = goodMoves[0]
+        n = np.bincount(goodMoves).argmax()
     # just play a random move for now
     else: 
         n = np.random.randint(1,9)
