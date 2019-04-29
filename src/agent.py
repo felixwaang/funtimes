@@ -17,6 +17,8 @@ import numpy as np
 boards = np.zeros((10, 10), dtype="int8")
 s = [".","X","O"]
 curr = 0 # this is the current board to play in
+depth_limit = 4 # Max depth iterate too
+curr_depth = 0 # Curr depth
 
 # print a row
 # This is just ported from game.c
@@ -40,6 +42,88 @@ def print_board(board):
     print_board_row(board, 7,8,9,4,5,6)
     print_board_row(board, 7,8,9,7,8,9)
     print()
+
+### Alpha Beta stuff ###
+def alphabeta(board):
+    global curr_depth
+    global curr
+    # Set up alpha and beta
+    alpha = -float('inf')
+    beta = float('inf')
+
+    children = genChildren(board, curr, 1)
+    curr_depth += 1
+    nextMove = 0
+    for moveTile, child in children.items():
+        eval = calc_min(child, moveTile, alpha, beta)
+        print ("Move Tile is:", moveTile)
+        print ("Evaluation is:", eval)
+        if eval > alpha:
+            alpha = eval
+            nextMove = moveTile
+    print ("whats my next move?", nextMove)
+    return nextMove # this returns the next move to make
+
+def calc_min(board, move, alpha, beta):
+    global curr_depth
+
+    if isTerminal():
+        return getHeuristic2()
+
+    min_val = float('inf')
+    children = genChildren(board, move, 2)
+    curr_depth += 1
+    for moveTile, child in children.items():
+        eval = calc_max(child, moveTile, alpha, beta)
+        min_val = min(min_val, eval)
+        beta = min(beta, eval)
+        if beta <= alpha:
+            break
+
+    return min_val
+
+def calc_max(board, move, alpha, beta):
+    global curr_depth
+
+    if isTerminal():
+        return getHeuristic2()
+
+    max_val = -float('inf')
+    children = genChildren(board, move, 1)
+    curr_depth += 1
+    for moveTile, child in children.items():
+        eval = calc_min(child, moveTile, alpha, beta)
+        max_val = max(max_val, eval)
+        alpha = max(alpha, eval)
+        if beta <= alpha:
+            break
+
+    return max_val
+
+def isTerminal():
+    global max_depth
+    global curr_depth
+    if (curr_depth >= depth_limit):
+        curr_depth = 0
+        return True
+    return False
+
+def getHeuristic2():
+    return np.random.randint(1,9)
+
+def play():
+    print_board(boards)
+    moveToMake = alphabeta(boards)
+    if moveToMake == 0:
+        for i in range (1,10):
+            if boards[curr][i] == 0:
+                place(curr, i, 1)
+                return i
+
+    place(curr, moveToMake, 1)
+    return moveToMake
+
+### End of Alpha Beta Stuff ###
 
 def chooseMove():
     global boards
@@ -142,17 +226,17 @@ def checkWin(board,boardnum,player):
    
 #generate all children for a board
 def genChildren(board, boardnum, player):
-    children = []
+    # dictionary instead board -> move played
+    children = {}
     for i in range(1,10):
         if board[boardnum][i] == 0:
             child = board[:]
             child[boardnum][i] = player
-            children.append(child)
-            
+            children[i] = child
     return children
    
 # choose a move to play
-def play():
+def play2():
     print_board(boards)
     goodMoves = chooseMove()
     if (len(goodMoves)== 1):
