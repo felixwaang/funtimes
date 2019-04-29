@@ -42,13 +42,16 @@ def print_board(board):
     print()
 
 def chooseMove():
-    possible = []
     global boards
+    possible = []
+
     for i in range(1,10):
         if boards[curr][i] == 0:
+            yes = getHeuristic(boards,curr,i)
+            print(yes, " is heuristic")
             nextMove = boards.copy()
             nextMove[curr][i] = 1 
-            if checkWin(nextMove,1):
+            if checkWin(nextMove,curr,1):
                 print("winning move yeet")
                 win = []
                 win.append(i)
@@ -57,23 +60,83 @@ def chooseMove():
                 # Check other person doesn't win next move
                 children = genChildren(nextMove, i, 2)
                 for j in children:
-                    if checkWin(j, 2):
+                    if checkWin(j,i, 2):
                         continue
                     else:
                         possible.append(i)
-    print (possible,curr)
     return possible
-   
-def checkWin(current,player):
 
-    if (current[curr][1]==current[curr][2]==current[curr][3]==player or
-    current[curr][4]==current[curr][5]==current[curr][6]==player or
-    current[curr][7]==current[curr][8]==current[curr][9]==player or
-    current[curr][1]==current[curr][4]==current[curr][7]==player or
-    current[curr][2]==current[curr][5]==current[curr][8]==player or
-    current[curr][3]==current[curr][6]==current[curr][9]==player or
-    current[curr][1]==current[curr][5]==current[curr][9]==player or
-    current[curr][3]==current[curr][5]==current[curr][7]==player):
+#get a heuristic for a board
+#board is the board we are using
+#current is the current board in board
+#move is the selected move to make
+def getHeuristic(board,boardnum,move):    
+    #if this is winning move
+    if checkWin(board,boardnum,1):
+        return 10
+    if checkDraw(board,boardnum): #if move results in draw
+        return 0
+    oppMoves = genChildren(board,move,2)
+    for i in oppMoves:  #if move results in opponent win
+        if checkWin(i,move,2):
+            return -10
+
+    score = 0
+    #checking each row for x1 and x2 horizontally for each player
+    adjacent[0,0] #x2 array for both players 0 is player 1 is opponent
+    single=[0,0] #x1 array for both players
+    for j in range(1,2):
+        for i in ([1,4,7]):  #for each row
+            if board[boardnum][i] == j == board[boardnum][i+1] and  board[boardnum][i+2] == 0: #check for X|X|0
+                adjacent[j-1] += 1
+            elif board[boardnum][i] == j and  board[boardnum][i+2] == 0 == board[boardnum][i+1]: #check for X|0|0
+                single[j-1] +=1
+            elif board[boardnum][i+1] == j == board[boardnum][i+2] and  board[boardnum][i] == 0:    #check for 0|X|X
+                adjacent[j-1] +=1
+            elif board[boardnum][i+1] == j  and  board[boardnum][i] == 0 == board[boardnum][i+2]:    #if the row is 0|X|0
+                single[j-1] += 1
+            elif board[boardnum][i+2] == j  and  board[boardnum][i] == 0 == board[boardnum][i+1]:  #if row is 0|0|X 
+                single[j-1] += 1            
+    for j in range(1,2):
+        for i in ([1,2,3]):  #for each row
+            if board[boardnum][i] == j == board[boardnum][i+3] and  board[boardnum][i+6] == 0: #check for X|X|0 (in columns)
+                adjacent[j-1] += 1
+            elif board[boardnum][i] == j and  board[boardnum][i+3] == 0 == board[boardnum][i+6]: #check for X|0|0
+                single[j-1] +=1
+            elif board[boardnum][i+3] == j == board[boardnum][i+6] and  board[boardnum][i] == 0:    #check for 0|X|X
+                adjacent[j-1] +=1
+            elif board[boardnum][i+3] == j  and  board[boardnum][i] == 0 == board[boardnum][i+6]:    #if the row is 0|X|0
+                single[j-1] += 1
+            elif board[boardnum][i+6] == j  and  board[boardnum][i] == 0 == board[boardnum][i+3]:  #if row is 0|0|X     
+                single[j-1] += 1  
+    #diagonals
+    
+                
+    score = 3*adjacent[0] + single[0] - (3*adjacent[1]+single[1])
+    
+    return score
+
+
+    
+#check if board is a draw    
+def checkDraw(board,boardnum):
+    if not checkWin(board,boardnum,1) and not checkWin(board,boardnum,2):
+        for i in range(1,10):
+            if board[boardnum][i] == 0:
+                return False         
+    return True       
+    
+#check win in one of the boards for a certain player
+def checkWin(board,boardnum,player):
+    
+    if (board[boardnum][1]==board[boardnum][2]==board[boardnum][3]==player or
+    board[boardnum][4]==board[boardnum][5]==board[boardnum][6]==player or
+    board[boardnum][7]==board[boardnum][8]==board[boardnum][9]==player or
+    board[boardnum][1]==board[boardnum][4]==board[boardnum][7]==player or
+    board[boardnum][2]==board[boardnum][5]==board[boardnum][8]==player or
+    board[boardnum][3]==board[boardnum][6]==board[boardnum][9]==player or
+    board[boardnum][1]==board[boardnum][5]==board[boardnum][9]==player or
+    board[boardnum][3]==board[boardnum][5]==board[boardnum][7]==player):
         return True
     return False
    
@@ -85,6 +148,7 @@ def genChildren(board, boardnum, player):
             child = board[:]
             child[boardnum][i] = player
             children.append(child)
+            
     return children
    
 # choose a move to play
