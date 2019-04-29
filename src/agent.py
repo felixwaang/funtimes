@@ -8,6 +8,14 @@ import socket
 import sys
 import numpy as np
 
+###### For Daniel:
+# i think the minimax function is correct or somewhat working
+# our heuristic is rlly bad.... TODO: Better heuristic 
+# I think maybe our isTerminal is incorrect....
+# maybe isterminal can take in a board, and check if its done...?
+# Defs need to fix heuristic first to know if isterminal is bad
+
+
 # a board cell can hold:
 #   0 - Empty
 #   1 - I played here
@@ -68,15 +76,15 @@ def calc_min(board, move, alpha, beta):
     global curr_depth
 
     if isTerminal():
-        return getHeuristic2(board, move)
+        return getHeuristic(board, move)
 
     min_val = float('inf')
     children = genChildren(board, move, 2)
     curr_depth += 1
     for moveTile, child in children.items():
         eval = calc_max(child, moveTile, alpha, beta)
-        min_val = min(min_val, eval)
         beta = min(beta, eval)
+        min_val = min(min_val, eval)
         if beta <= alpha:
             break
 
@@ -86,22 +94,22 @@ def calc_max(board, move, alpha, beta):
     global curr_depth
 
     if isTerminal():
-        return getHeuristic2(board, move)
+        return getHeuristic(board, move)
 
     max_val = -float('inf')
     children = genChildren(board, move, 1)
     curr_depth += 1
     for moveTile, child in children.items():
         eval = calc_min(child, moveTile, alpha, beta)
-        max_val = max(max_val, eval)
         alpha = max(alpha, eval)
+        max_val = max(eval, max_val)
         if beta <= alpha:
             break
 
     return max_val
 
 def isTerminal():
-    global max_depth
+    global depth_limit
     global curr_depth
     if (curr_depth >= depth_limit):
         curr_depth = 0
@@ -252,7 +260,7 @@ def getHeuristic2(board, boardnum):
             us += 1
         elif board[boardnum][i] == 2:
             them += 1
-    return 2*us - 2*them + neutral
+    return 2*us - 3*them + neutral
 
 #check if board is a draw    
 def checkDraw(board,boardnum):
