@@ -68,7 +68,7 @@ def calc_min(board, move, alpha, beta):
     global curr_depth
 
     if isTerminal():
-        return getHeuristic()
+        return getHeuristic2()
 
     min_val = float('inf')
     children = genChildren(board, move, 2)
@@ -86,7 +86,7 @@ def calc_max(board, move, alpha, beta):
     global curr_depth
 
     if isTerminal():
-        return getHeuristic()
+        return getHeuristic2()
 
     max_val = -float('inf')
     children = genChildren(board, move, 1)
@@ -108,7 +108,7 @@ def isTerminal():
         return True
     return False
 
-def getHeuristic():
+def getHeuristic2():
     return np.random.randint(1,9)
 
 def play():
@@ -232,7 +232,7 @@ def genChildren(board, boardnum, player):
         if board[boardnum][i] == 0:
             child = board[:]
             child[boardnum][i] = player
-            children.append(child)
+            children[i] = child
     return children
    
 # choose a move to play
