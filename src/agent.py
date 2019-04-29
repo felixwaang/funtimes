@@ -68,7 +68,7 @@ def calc_min(board, move, alpha, beta):
     global curr_depth
 
     if isTerminal():
-        return getHeuristic(board, move)
+        return getHeuristic2(board, move)
 
     min_val = float('inf')
     children = genChildren(board, move, 2)
@@ -86,7 +86,7 @@ def calc_max(board, move, alpha, beta):
     global curr_depth
 
     if isTerminal():
-        return getHeuristic(board, move)
+        return getHeuristic2(board, move)
 
     max_val = -float('inf')
     children = genChildren(board, move, 1)
@@ -241,7 +241,19 @@ def getHeuristic(board,boardnum):
     
     return score
 
-    
+def getHeuristic2(board, boardnum):
+    us = 0
+    them = 0
+    neutral = 0
+    for i in range(1,10):
+        if board[boardnum][i] == 0:
+            neutral += 1
+        elif board[boardnum][i] == 1:
+            us += 1
+        elif board[boardnum][i] == 2:
+            them += 1
+    return 2*us - 2*them + neutral
+
 #check if board is a draw    
 def checkDraw(board,boardnum):
     if not checkWin(board,boardnum,1) and not checkWin(board,boardnum,2):
