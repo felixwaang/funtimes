@@ -80,7 +80,7 @@ def getHeuristic(board,boardnum,move):
     for i in oppMoves:  #if move results in opponent win
         if checkWin(i,move,2):
             return -10
-
+    
     score = 0
     #checking each row for x1 and x2 horizontally for each player
     adjacent[0,0] #x2 array for both players 0 is player 1 is opponent
