@@ -78,8 +78,8 @@ def alphabeta(board):
 def calc_min(board, move, alpha, beta, depth, curr_move):
     global depth_limit
 
-    if checkWin(board, curr_move, 1):
-        return 1000000000
+    #if checkWin(board, curr_move, 1):
+    #    return 1000000000
 
     if depth >= depth_limit:
         return getHeuristic(board, curr_move, move)
@@ -99,8 +99,8 @@ def calc_min(board, move, alpha, beta, depth, curr_move):
 def calc_max(board, move, alpha, beta, depth, curr_move):
     global depth_limit
 
-    if checkWin(board, curr_move, 2):
-        return -1000000000
+    #if checkWin(board, curr_move, 2):
+    #    return -1000000000
 
     if depth >= depth_limit:
         return getHeuristic(board, curr_move, move)
