@@ -25,7 +25,7 @@ import numpy as np
 boards = np.zeros((10, 10), dtype="int8")
 s = [".","X","O"]
 curr = 0 # this is the current board to play in
-depth_limit = 1 # Max depth iterate too
+depth_limit = 2 # Max depth iterate too
 
 # print a row
 # This is just ported from game.c
@@ -76,7 +76,7 @@ def calc_min(board, move, alpha, beta, depth):
     global depth_limit
 
     if depth >= depth_limit:
-        return getHeuristic2(board, move)
+        return getHeuristic(board, move)
     
     if checkWin(board, move, 2):
         return -1000000000
@@ -98,7 +98,7 @@ def calc_max(board, move, alpha, beta, depth):
     global depth_limit
 
     if depth >= depth_limit:
-        return getHeuristic2(board, move)
+        return getHeuristic(board, move)
     
     if checkWin(board, move, 1):
         return 1000000000
@@ -180,15 +180,16 @@ def getHeuristic(board,boardnum):
     #if this is winning move
     score = 0
     if checkWin(board,boardnum,1):
-        return 1000000000
+        score += 100
     elif checkWin(board, boardnum, 2):
-        return -1000000000
-   # elif checkDraw(board,boardnum): #if move results in draw
-   #     return 0
+        score -= 100
+    elif checkDraw(board,boardnum): #if move results in draw
+        return 0
     #opp = genChildren(board,boardnum,2)
     #for i in opp:
     #    if checkWin(opp[i],boardnum,2) == True:
     #        score -= 1
+
             
     #checking each row for x1 and x2 horizontally for each player
     adjacent=[0,0] #x2 array for both players 0 is player 1 is opponent
