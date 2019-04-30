@@ -8,6 +8,14 @@ import socket
 import sys
 import numpy as np
 
+###### For Daniel:
+# i think the minimax function is correct or somewhat working
+# our heuristic is rlly bad.... TODO: Better heuristic 
+# I think maybe our isTerminal is incorrect....
+# maybe isterminal can take in a board, and check if its done...?
+# Defs need to fix heuristic first to know if isterminal is bad
+
+
 # a board cell can hold:
 #   0 - Empty
 #   1 - I played here
@@ -17,7 +25,7 @@ import numpy as np
 boards = np.zeros((10, 10), dtype="int8")
 s = [".","X","O"]
 curr = 0 # this is the current board to play in
-depth_limit = 4 # Max depth iterate too
+depth_limit = 0 # Max depth iterate too
 curr_depth = 0 # Curr depth
 
 # print a row
@@ -68,15 +76,15 @@ def calc_min(board, move, alpha, beta):
     global curr_depth
 
     if isTerminal():
-        return getHeuristic2()
+        return getHeuristic(board, move)
 
     min_val = float('inf')
     children = genChildren(board, move, 2)
     curr_depth += 1
     for moveTile, child in children.items():
         eval = calc_max(child, moveTile, alpha, beta)
-        min_val = min(min_val, eval)
         beta = min(beta, eval)
+        min_val = min(min_val, eval)
         if beta <= alpha:
             break
 
@@ -86,42 +94,56 @@ def calc_max(board, move, alpha, beta):
     global curr_depth
 
     if isTerminal():
-        return getHeuristic2()
+        return getHeuristic(board, move)
 
     max_val = -float('inf')
     children = genChildren(board, move, 1)
     curr_depth += 1
     for moveTile, child in children.items():
         eval = calc_min(child, moveTile, alpha, beta)
-        max_val = max(max_val, eval)
         alpha = max(alpha, eval)
+        max_val = max(eval, max_val)
         if beta <= alpha:
             break
 
     return max_val
 
 def isTerminal():
-    global max_depth
+    global depth_limit
     global curr_depth
     if (curr_depth >= depth_limit):
         curr_depth = 0
         return True
     return False
 
-def getHeuristic2():
-    return np.random.randint(1,9)
-
 def play():
+    global boards
     print_board(boards)
-    moveToMake = alphabeta(boards)
-    if moveToMake == 0:
-        for i in range (1,10):
-            if boards[curr][i] == 0:
-                place(curr, i, 1)
-                return i
+    possible = []
 
-    place(curr, moveToMake, 1)
-    return moveToMake
+    for i in range(1,10):
+        if boards[curr][i] == 0:
+            nextMove = boards.copy()
+            nextMove[curr][i] = 1
+            if checkWin(nextMove, curr, 1):
+                print ("winning move yeet")
+                return i
+            else:
+                children = genChildren(nextMove, i, 2)
+                for j in children.values():
+                    if checkWin(j, i, 2):
+                        continue
+                    else:
+                        possible.append(i)
+
+    moveToMake = alphabeta(boards)
+    if moveToMake not in possible and possible:
+        print ("all the possible", possible)
+        place(curr, possible[0], 1)
+        return possible[0]
+    else:
+        place(curr, moveToMake, 1)
+        return moveToMake
 
 ### End of Alpha Beta Stuff ###
 
@@ -154,54 +176,92 @@ def chooseMove():
 #board is the board we are using
 #current is the current board in board
 #move is the selected move to make
-def getHeuristic(board,boardnum,move):    
+def getHeuristic(board,boardnum):    
     #if this is winning move
     if checkWin(board,boardnum,1):
         return 10
     if checkDraw(board,boardnum): #if move results in draw
         return 0
-    oppMoves = genChildren(board,move,2)
-    for i in oppMoves:  #if move results in opponent win
-        if checkWin(i,move,2):
-            return -10
-    
+
     score = 0
     #checking each row for x1 and x2 horizontally for each player
-    adjacent[0,0] #x2 array for both players 0 is player 1 is opponent
+    adjacent=[0,0] #x2 array for both players 0 is player 1 is opponent
     single=[0,0] #x1 array for both players
-    for j in range(1,2):
+    for j in range(1,3):
         for i in ([1,4,7]):  #for each row
-            if board[boardnum][i] == j == board[boardnum][i+1] and  board[boardnum][i+2] == 0: #check for X|X|0
+            if board[boardnum][i] == j == board[boardnum][i+1] and board[boardnum][i+2] == 0: #check for X|X|0 
                 adjacent[j-1] += 1
-            elif board[boardnum][i] == j and  board[boardnum][i+2] == 0 == board[boardnum][i+1]: #check for X|0|0
+            elif board[boardnum][i] == j and board[boardnum][i+2] == 0 == board[boardnum][i+1]: #check for X|0|0
                 single[j-1] +=1
             elif board[boardnum][i+1] == j == board[boardnum][i+2] and  board[boardnum][i] == 0:    #check for 0|X|X
                 adjacent[j-1] +=1
-            elif board[boardnum][i+1] == j  and  board[boardnum][i] == 0 == board[boardnum][i+2]:    #if the row is 0|X|0
+            elif board[boardnum][i+1] == j and board[boardnum][i] == 0 == board[boardnum][i+2]:    #if the row is 0|X|0
                 single[j-1] += 1
-            elif board[boardnum][i+2] == j  and  board[boardnum][i] == 0 == board[boardnum][i+1]:  #if row is 0|0|X 
+            elif board[boardnum][i+2] == j and board[boardnum][i] == 0 == board[boardnum][i+1]:  #if row is 0|0|X 
                 single[j-1] += 1            
-    for j in range(1,2):
-        for i in ([1,2,3]):  #for each row
-            if board[boardnum][i] == j == board[boardnum][i+3] and  board[boardnum][i+6] == 0: #check for X|X|0 (in columns)
+            elif board[boardnum][i] == j == board[boardnum][i+2] and board[boardnum][i+1] == 0: # if X|0|X
                 adjacent[j-1] += 1
-            elif board[boardnum][i] == j and  board[boardnum][i+3] == 0 == board[boardnum][i+6]: #check for X|0|0
+
+    for j in range(1,3):
+        for i in ([1,2,3]):  #for each row
+            if board[boardnum][i] == j == board[boardnum][i+3] and board[boardnum][i+6] == 0: #check for X|X|0 (in columns)
+                adjacent[j-1] += 1
+            elif board[boardnum][i] == j and board[boardnum][i+3] == 0 == board[boardnum][i+6]: #check for X|0|0
                 single[j-1] +=1
-            elif board[boardnum][i+3] == j == board[boardnum][i+6] and  board[boardnum][i] == 0:    #check for 0|X|X
+            elif board[boardnum][i+3] == j == board[boardnum][i+6] and board[boardnum][i] == 0:    #check for 0|X|X
                 adjacent[j-1] +=1
-            elif board[boardnum][i+3] == j  and  board[boardnum][i] == 0 == board[boardnum][i+6]:    #if the row is 0|X|0
+            elif board[boardnum][i+3] == j and board[boardnum][i] == 0 == board[boardnum][i+6]:    #if the row is 0|X|0
                 single[j-1] += 1
-            elif board[boardnum][i+6] == j  and  board[boardnum][i] == 0 == board[boardnum][i+3]:  #if row is 0|0|X     
+            elif board[boardnum][i+6] == j and board[boardnum][i] == 0 == board[boardnum][i+3]:  #if row is 0|0|X     
                 single[j-1] += 1  
+            elif board[boardnum][i] == j == board[boardnum][i+6] and board[boardnum][i+3] == 0: # if X|0|X
+                adjacent[j-1] += 1
+
     #diagonals
-    
+    for j in range(1,3):
+        if board[boardnum][1] == j == board[boardnum][5] and board[boardnum][9] == 0:
+            adjacent[j-1] += 1
+        elif board[boardnum][1] == j == board[boardnum][9] and board[boardnum][5] == 0:
+            adjacent[j-1] += 1
+        elif board[boardnum][1] == j and board[boardnum][5] == 0 == board[boardnum][9]:
+            single[j-1] += 1
+        elif board[boardnum][1] == 0 and board[boardnum][5] == j == board[boardnum][9]:
+            adjacent[j-1] += 1
+        elif board[boardnum][1] == 0 == board[boardnum][9] and board[boardnum][5] == j:
+            single[j-1] += 1
+        elif board[boardnum][1] == 0 == board[boardnum][5] and board[boardnum][9] == j:
+            single[j-1] += 1
+
+        if board[boardnum][3] == j == board[boardnum][5] and board[boardnum][7] == 0:
+            adjacent[j-1] += 1
+        elif board[boardnum][3] == j == board[boardnum][7] and board[boardnum][5] == 0:
+            adjacent[j-1] += 1
+        elif board[boardnum][3] == j and board[boardnum][5] == 0 == board[boardnum][7]:
+            single[j-1] += 1
+        elif board[boardnum][3] == 0 and board[boardnum][5] == j == board[boardnum][7]:
+            adjacent[j-1] += 1
+        elif board[boardnum][3] == 0 == board[boardnum][7] and board[boardnum][5] == j:
+            single[j-1] += 1
+        elif board[boardnum][3] == 0 == board[boardnum][5] and board[boardnum][7] == j:
+            single[j-1] += 1
                 
     score = 3*adjacent[0] + single[0] - (3*adjacent[1]+single[1])
     
     return score
 
+def getHeuristic2(board, boardnum):
+    us = 0
+    them = 0
+    neutral = 0
+    for i in range(1,10):
+        if board[boardnum][i] == 0:
+            neutral += 1
+        elif board[boardnum][i] == 1:
+            us += 1
+        elif board[boardnum][i] == 2:
+            them += 1
+    return 2*us - 3*them + neutral
 
-    
 #check if board is a draw    
 def checkDraw(board,boardnum):
     if not checkWin(board,boardnum,1) and not checkWin(board,boardnum,2):
@@ -230,7 +290,7 @@ def genChildren(board, boardnum, player):
     children = {}
     for i in range(1,10):
         if board[boardnum][i] == 0:
-            child = board[:]
+            child = board.copy()
             child[boardnum][i] = player
             children[i] = child
     return children
