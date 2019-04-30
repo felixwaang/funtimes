@@ -25,7 +25,7 @@ import numpy as np
 boards = np.zeros((10, 10), dtype="int8")
 s = [".","X","O"]
 curr = 0 # this is the current board to play in
-depth_limit = 3 # Max depth iterate too
+depth_limit = 0 # Max depth iterate too
 
 # print a row
 # This is just ported from game.c
@@ -182,12 +182,13 @@ def getHeuristic(board, prev_board, boardnum, player):
     if player == 1:
         scoreUs = rowColHeuristic(board,prev_board,1)
         scoreThem = rowColHeuristic(board,boardnum,2)
+
     else:
         scoreUs = rowColHeuristic(board,prev_board,2)
-        scoreThem = rowColHeuristic(board,boardnum,1)
+        scoreThem = rowColHeuristic(board,boardnum,1)        
     print ("our board is ", scoreUs, " their ", scoreThem, " in boards ", prev_board, " and ", boardnum)
     
-    return  scoreUs + scoreThem
+    return scoreUs - scoreThem
     
 
 def rowColHeuristic(board,boardnum,player):
@@ -197,12 +198,21 @@ def rowColHeuristic(board,boardnum,player):
     else:
         opp = 2
         
+ #   if checkWin(board,boardnum,player):
+  #      score += 100
+  #  elif checkWin(board, boardnum, opp):
+   #     score -= 100
+ #   elif checkDraw(board,boardnum): #if move results in draw
+     #   return 0
+        
     if checkWin(board,boardnum,player):
-        score += 100
+        return 100
     elif checkWin(board, boardnum, opp):
-        score -= 100
+        return -100
     elif checkDraw(board,boardnum): #if move results in draw
         return 0
+    
+    
     
     #checking each row for x1 and x2 horizontally for each player
     adjacent=[0,0] #x2 array for both players 0 is player 1 is opponent
@@ -214,7 +224,7 @@ def rowColHeuristic(board,boardnum,player):
             elif board[boardnum][i] == j and board[boardnum][i+2] == 0 == board[boardnum][i+1]: #check for X|0|0
                 single[j-1] +=1
             elif board[boardnum][i+1] == j == board[boardnum][i+2] and  board[boardnum][i] == 0:    #check for 0|X|X
-                adjacent[j-1] +=10
+                adjacent[j-1] += 10
             elif board[boardnum][i+1] == j and board[boardnum][i] == 0 == board[boardnum][i+2]:    #if the row is 0|X|0
                 single[j-1] += 1
             elif board[boardnum][i+2] == j and board[boardnum][i] == 0 == board[boardnum][i+1]:  #if row is 0|0|X 
@@ -268,14 +278,19 @@ def rowColHeuristic(board,boardnum,player):
     #score += 3*adjacent[0] + single[0] - (3*adjacent[1]+single[1])
 
     if player == 2:
+       # score += (3*adjacent[1]+single[1]) - 3*adjacent[0] + single[0] 
         score -= adjacent[0] + single[0]
         score += (adjacent[1] + single[1])
+        
     else:
+       # score += 3*adjacent[0] + single[0] - (3*adjacent[1]+single[1])
         score += adjacent[0] + single[0]
         score -= adjacent[1] + single[1]
 
     return score
 
+
+        
 def getHeuristic2(board, prev_board, boardnum):
     us = 0
     them = 0
@@ -289,25 +304,7 @@ def getHeuristic2(board, prev_board, boardnum):
             them += 1
     return 2*us - 3*them + neutral
 
-def getHeuristic3(board, boardnum):
-    opponent = genChildren(board,boardnum,2)
-    oppWins = 0
-    for i in opponent:
-        if checkWin(opponent[i],boardnum,2) == True:
-            oppWins += 1
-    prob = oppWins/len(opponent)    
-    print("prob is ", prob)        
-    return prob
-    
-def getHeuristic4(board,boardnum):
-    if checkWin(board,boardnum,1) == True:
-        return float('inf')
-    elif checkWin(board,boardnum,2) == True:
-        return -float('inf')
-    else:
-        oppH = 0
-        myH = 0
-        getHeuristic(board,boardnum)
+
         
 #check if board is a draw    
 def checkDraw(board,boardnum):
