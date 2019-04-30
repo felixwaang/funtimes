@@ -275,8 +275,17 @@ def getHeuristic3(board, boardnum):
     prob = oppWins/len(opponent)    
     print("prob is ", prob)        
     return prob
-            
     
+def getHeuristic4(board,boardnum):
+    if checkWin(board,boardnum,1) == True:
+        return float('inf')
+    elif checkWin(board,boardnum,2) == True:
+        return -float('inf')
+    else:
+        oppH = 0
+        myH = 0
+        getHeuristic(board,boardnum)
+        
 #check if board is a draw    
 def checkDraw(board,boardnum):
     if not checkWin(board,boardnum,1) and not checkWin(board,boardnum,2):
