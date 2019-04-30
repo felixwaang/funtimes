@@ -25,7 +25,7 @@ import numpy as np
 boards = np.zeros((10, 10), dtype="int8")
 s = [".","X","O"]
 curr = 0 # this is the current board to play in
-depth_limit = 2 # Max depth iterate too
+depth_limit = 6 # Max depth iterate too
 
 # print a row
 # This is just ported from game.c
@@ -79,8 +79,7 @@ def calc_min(board, move, alpha, beta, depth, curr_move):
     global depth_limit
 
     if depth >= depth_limit:
-
-        return getHeuristic(board, move)
+        return getHeuristic(board, curr_move, move)
 
     
     if checkWin(board, move, 2):
@@ -103,7 +102,8 @@ def calc_min(board, move, alpha, beta, depth, curr_move):
 def calc_max(board, move, alpha, beta, depth, curr_move):
     global depth_limit
 
-        return getHeuristic(board, move)
+    if depth >= depth_limit:
+        return getHeuristic(board, curr_move, move)
 
     
     if checkWin(board, move, 1):
@@ -185,6 +185,11 @@ def chooseMove():
 #move is the selected move to make
 def getHeuristic(board, prev_board, boardnum):    
     #if this is winning move
+    print("we are on ", prev_board, " and next ", boardnum)
+    return rowColHeuristic(board,prev_board)
+    
+
+def rowColHeuristic(board,boardnum):
     score = 0
     if checkWin(board,boardnum,1):
         score += 100
@@ -204,63 +209,64 @@ def getHeuristic(board, prev_board, boardnum):
     for j in range(1,3):
         for i in ([1,4,7]):  #for each row
             if board[boardnum][i] == j == board[boardnum][i+1] and board[boardnum][i+2] == 0: #check for X|X|0 
-                adjacent[j-1] += 1
+                adjacent[j-1] += 10
             elif board[boardnum][i] == j and board[boardnum][i+2] == 0 == board[boardnum][i+1]: #check for X|0|0
                 single[j-1] +=1
             elif board[boardnum][i+1] == j == board[boardnum][i+2] and  board[boardnum][i] == 0:    #check for 0|X|X
-                adjacent[j-1] +=1
+                adjacent[j-1] +=10
             elif board[boardnum][i+1] == j and board[boardnum][i] == 0 == board[boardnum][i+2]:    #if the row is 0|X|0
                 single[j-1] += 1
             elif board[boardnum][i+2] == j and board[boardnum][i] == 0 == board[boardnum][i+1]:  #if row is 0|0|X 
                 single[j-1] += 1            
             elif board[boardnum][i] == j == board[boardnum][i+2] and board[boardnum][i+1] == 0: # if X|0|X
-                adjacent[j-1] += 1
-
+                adjacent[j-1] += 10
+    #columns
     for j in range(1,3):
-        for i in ([1,2,3]):  #for each row
+        for i in ([1,2,3]):  #for each column
             if board[boardnum][i] == j == board[boardnum][i+3] and board[boardnum][i+6] == 0: #check for X|X|0 (in columns)
-                adjacent[j-1] += 1
+                adjacent[j-1] += 10
             elif board[boardnum][i] == j and board[boardnum][i+3] == 0 == board[boardnum][i+6]: #check for X|0|0
                 single[j-1] +=1
             elif board[boardnum][i+3] == j == board[boardnum][i+6] and board[boardnum][i] == 0:    #check for 0|X|X
-                adjacent[j-1] +=1
-            elif board[boardnum][i+3] == j and board[boardnum][i] == 0 == board[boardnum][i+6]:    #if the row is 0|X|0
+                adjacent[j-1] +=10
+            elif board[boardnum][i+3] == j and board[boardnum][i] == 0 == board[boardnum][i+6]:    #if is 0|X|0
                 single[j-1] += 1
-            elif board[boardnum][i+6] == j and board[boardnum][i] == 0 == board[boardnum][i+3]:  #if row is 0|0|X     
+            elif board[boardnum][i+6] == j and board[boardnum][i] == 0 == board[boardnum][i+3]:  #if is 0|0|X     
                 single[j-1] += 1  
             elif board[boardnum][i] == j == board[boardnum][i+6] and board[boardnum][i+3] == 0: # if X|0|X
-                adjacent[j-1] += 1
+                adjacent[j-1] += 10
 
     #diagonals
     for j in range(1,3):
         if board[boardnum][1] == j == board[boardnum][5] and board[boardnum][9] == 0:
-            adjacent[j-1] += 1
+            adjacent[j-1] += 10
         elif board[boardnum][1] == j == board[boardnum][9] and board[boardnum][5] == 0:
-            adjacent[j-1] += 1
+            adjacent[j-1] += 10
         elif board[boardnum][1] == j and board[boardnum][5] == 0 == board[boardnum][9]:
             single[j-1] += 1
         elif board[boardnum][1] == 0 and board[boardnum][5] == j == board[boardnum][9]:
-            adjacent[j-1] += 1
+            adjacent[j-1] += 10
         elif board[boardnum][1] == 0 == board[boardnum][9] and board[boardnum][5] == j:
             single[j-1] += 1
         elif board[boardnum][1] == 0 == board[boardnum][5] and board[boardnum][9] == j:
             single[j-1] += 1
 
         if board[boardnum][3] == j == board[boardnum][5] and board[boardnum][7] == 0:
-            adjacent[j-1] += 1
+            adjacent[j-1] += 10
         elif board[boardnum][3] == j == board[boardnum][7] and board[boardnum][5] == 0:
-            adjacent[j-1] += 1
+            adjacent[j-1] += 10
         elif board[boardnum][3] == j and board[boardnum][5] == 0 == board[boardnum][7]:
             single[j-1] += 1
         elif board[boardnum][3] == 0 and board[boardnum][5] == j == board[boardnum][7]:
-            adjacent[j-1] += 1
+            adjacent[j-1] += 10
         elif board[boardnum][3] == 0 == board[boardnum][7] and board[boardnum][5] == j:
             single[j-1] += 1
         elif board[boardnum][3] == 0 == board[boardnum][5] and board[boardnum][7] == j:
             single[j-1] += 1
                 
-    score += 3*adjacent[0] + single[0] - (3*adjacent[1]+single[1])
-    
+    #score += 3*adjacent[0] + single[0] - (3*adjacent[1]+single[1])
+    score += adjacent[0] + single[0]
+    score -= adjacent[1] + single[1]
     return score
 
 def getHeuristic2(board, prev_board, boardnum):
