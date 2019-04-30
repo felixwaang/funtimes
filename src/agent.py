@@ -3,7 +3,7 @@
 # Contact me at z.partridge@unsw.edu.au
 # 06/04/19
 # Feel free to use this and modify it however you wish
-
+import copy
 import socket
 import sys
 import numpy as np
@@ -69,7 +69,7 @@ def alphabeta(board):
         if eval > alpha:
             alpha = eval
             nextMove = moveTile
-    print ("whats my next move?", nextMove)
+    print ("whats my next move?", nextMove, " in board ", curr)
     return nextMove # this returns the next move to make
 
 def calc_min(board, move, alpha, beta):
@@ -94,7 +94,7 @@ def calc_max(board, move, alpha, beta):
     global curr_depth
 
     if isTerminal():
-        return getHeuristic(board, move)
+        return getHeuristic2(board, move)
 
     max_val = -float('inf')
     children = genChildren(board, move, 1)
@@ -178,12 +178,16 @@ def chooseMove():
 #move is the selected move to make
 def getHeuristic(board,boardnum):    
     #if this is winning move
-    if checkWin(board,boardnum,1):
-        return 10
-    if checkDraw(board,boardnum): #if move results in draw
-        return 0
-
     score = 0
+    if checkWin(board,boardnum,1):
+        score = 10
+   # elif checkDraw(board,boardnum): #if move results in draw
+   #     return 0
+    opp = genChildren(board,boardnum,2)
+    for i in opp:
+        if checkWin(opp[i],boardnum,2) == True:
+            score -= 1
+            
     #checking each row for x1 and x2 horizontally for each player
     adjacent=[0,0] #x2 array for both players 0 is player 1 is opponent
     single=[0,0] #x1 array for both players
@@ -245,7 +249,7 @@ def getHeuristic(board,boardnum):
         elif board[boardnum][3] == 0 == board[boardnum][5] and board[boardnum][7] == j:
             single[j-1] += 1
                 
-    score = 3*adjacent[0] + single[0] - (3*adjacent[1]+single[1])
+    score += 3*adjacent[0] + single[0] - (3*adjacent[1]+single[1])
     
     return score
 
@@ -262,6 +266,17 @@ def getHeuristic2(board, boardnum):
             them += 1
     return 2*us - 3*them + neutral
 
+def getHeuristic3(board, boardnum):
+    opponent = genChildren(board,boardnum,2)
+    oppWins = 0
+    for i in opponent:
+        if checkWin(opponent[i],boardnum,2) == True:
+            oppWins += 1
+    prob = oppWins/len(opponent)    
+    print("prob is ", prob)        
+    return prob
+            
+    
 #check if board is a draw    
 def checkDraw(board,boardnum):
     if not checkWin(board,boardnum,1) and not checkWin(board,boardnum,2):
@@ -290,7 +305,7 @@ def genChildren(board, boardnum, player):
     children = {}
     for i in range(1,10):
         if board[boardnum][i] == 0:
-            child = board.copy()
+            child = copy.deepcopy(board)
             child[boardnum][i] = player
             children[i] = child
     return children
