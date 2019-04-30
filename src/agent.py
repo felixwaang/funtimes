@@ -51,6 +51,9 @@ def print_board(board):
     print()
 
 ### Alpha Beta stuff ###
+# Note that moveTile is the next board the move needs to be played on
+# curr_move is where the move was played on current board
+
 def alphabeta(board):
     global curr
     global depth_limit
@@ -63,7 +66,7 @@ def alphabeta(board):
     depth += 1
     nextMove = 0
     for moveTile, child in children.items():
-        eval = calc_min(child, moveTile, alpha, beta, depth)
+        eval = calc_min(child, moveTile, alpha, beta, depth, curr)
         print ("Move Tile is:", moveTile)
         print ("Evaluation is:", eval)
         if eval > alpha:
@@ -72,11 +75,13 @@ def alphabeta(board):
     print ("whats my next move?", nextMove, " in board ", curr)
     return nextMove # this returns the next move to make
 
-def calc_min(board, move, alpha, beta, depth):
+def calc_min(board, move, alpha, beta, depth, curr_move):
     global depth_limit
 
     if depth >= depth_limit:
+
         return getHeuristic(board, move)
+
     
     if checkWin(board, move, 2):
         return -1000000000
@@ -84,21 +89,22 @@ def calc_min(board, move, alpha, beta, depth):
         return 1000000000
 
     min_val = float('inf')
+
     children = genChildren(board, move, 2)
     depth += 1
     for moveTile, child in children.items():
-        eval = calc_max(child, moveTile, alpha, beta, depth)
+        eval = calc_max(child, moveTile, alpha, beta, depth, move)
         min_val = min(min_val, eval)
         if min_val <= alpha:
             break
         beta = min(beta, min_val)
     return min_val
 
-def calc_max(board, move, alpha, beta, depth):
+def calc_max(board, move, alpha, beta, depth, curr_move):
     global depth_limit
 
-    if depth >= depth_limit:
         return getHeuristic(board, move)
+
     
     if checkWin(board, move, 1):
         return 1000000000
@@ -106,10 +112,11 @@ def calc_max(board, move, alpha, beta, depth):
         return -1000000000
 
     max_val = -float('inf')
+
     children = genChildren(board, move, 1)
     depth += 1
     for moveTile, child in children.items():
-        eval = calc_min(child, moveTile, alpha, beta, depth)
+        eval = calc_min(child, moveTile, alpha, beta, depth, move)
         max_val = max(max_val, eval)
         if beta <= max_val:
             break
@@ -176,7 +183,7 @@ def chooseMove():
 #board is the board we are using
 #current is the current board in board
 #move is the selected move to make
-def getHeuristic(board,boardnum):    
+def getHeuristic(board, prev_board, boardnum):    
     #if this is winning move
     score = 0
     if checkWin(board,boardnum,1):
@@ -256,7 +263,7 @@ def getHeuristic(board,boardnum):
     
     return score
 
-def getHeuristic2(board, boardnum):
+def getHeuristic2(board, prev_board, boardnum):
     us = 0
     them = 0
     neutral = 0
