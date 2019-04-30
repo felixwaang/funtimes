@@ -25,7 +25,7 @@ import numpy as np
 boards = np.zeros((10, 10), dtype="int8")
 s = [".","X","O"]
 curr = 0 # this is the current board to play in
-depth_limit = 2 # Max depth iterate too
+depth_limit = 3 # Max depth iterate too
 
 # print a row
 # This is just ported from game.c
