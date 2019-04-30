@@ -284,8 +284,7 @@ def rowColHeuristic(board,boardnum,player):
     else:
         score += adjacent[0] + single[0]
         score -= adjacent[1] + single[1]
-    if score == 0:
-        return 100
+
     return score
 
 def getHeuristic2(board, prev_board, boardnum):
