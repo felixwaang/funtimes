@@ -24,8 +24,13 @@ import numpy as np
 # the boards are of size 10 because index 0 isn't used
 boards = np.zeros((10, 10), dtype="int8")
 s = [".","X","O"]
+<<<<<<< HEAD
 curr = 1 # this is the current board to play in
 depth_limit = 1 # Max depth iterate too
+=======
+curr = 0 # this is the current board to play in
+depth_limit = 3 # Max depth iterate too
+>>>>>>> 1228535f72f5a6cb3e48f2c6165aef4839fe2b2c
 
 # print a row
 # This is just ported from game.c
@@ -78,12 +83,18 @@ def alphabeta(board):
 def calc_min(board, move, alpha, beta, depth, curr_move):
     global depth_limit
 
+
     if depth >= depth_limit:
         return getHeuristic(board, curr_move, move)
 
     
-    if checkWin(board, curr_move, 2):
-        return -1000000000
+
+    if checkWin(board, curr_move, 1):
+        return 1000000000
+
+
+    if depth >= depth_limit:
+        return getHeuristic(board, curr_move, move)
 
     min_val = float('inf')
 
@@ -100,12 +111,17 @@ def calc_min(board, move, alpha, beta, depth, curr_move):
 def calc_max(board, move, alpha, beta, depth, curr_move):
     global depth_limit
 
+
     if depth >= depth_limit:
         return getHeuristic(board, curr_move, move)
 
-    
-    if checkWin(board, curr_move, 1):
-        return 1000000000
+
+    if checkWin(board, curr_move, 2):
+        return -1000000000
+
+
+    if depth >= depth_limit:
+        return getHeuristic(board, curr_move, move)
 
     max_val = -float('inf')
 
