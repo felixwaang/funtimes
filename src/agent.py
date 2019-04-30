@@ -27,7 +27,6 @@ s = [".","X","O"]
 curr = 0 # this is the current board to play in
 depth_limit = 0 # Max depth iterate too
 
-
 # print a row
 # This is just ported from game.c
 def print_board_row(board, a, b, c, i, j, k):
