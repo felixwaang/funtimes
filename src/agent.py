@@ -25,8 +25,7 @@ import numpy as np
 boards = np.zeros((10, 10), dtype="int8")
 s = [".","X","O"]
 curr = 0 # this is the current board to play in
-depth_limit = 0 # Max depth iterate too
-curr_depth = 0 # Curr depth
+depth_limit = 1 # Max depth iterate too
 
 # print a row
 # This is just ported from game.c
@@ -53,17 +52,18 @@ def print_board(board):
 
 ### Alpha Beta stuff ###
 def alphabeta(board):
-    global curr_depth
     global curr
+    global depth_limit
+    depth = 0
     # Set up alpha and beta
     alpha = -float('inf')
     beta = float('inf')
 
     children = genChildren(board, curr, 1)
-    curr_depth += 1
+    depth += 1
     nextMove = 0
     for moveTile, child in children.items():
-        eval = calc_min(child, moveTile, alpha, beta)
+        eval = calc_min(child, moveTile, alpha, beta, depth)
         print ("Move Tile is:", moveTile)
         print ("Evaluation is:", eval)
         if eval > alpha:
@@ -72,49 +72,49 @@ def alphabeta(board):
     print ("whats my next move?", nextMove, " in board ", curr)
     return nextMove # this returns the next move to make
 
-def calc_min(board, move, alpha, beta):
-    global curr_depth
+def calc_min(board, move, alpha, beta, depth):
+    global depth_limit
 
-    if isTerminal():
-        return getHeuristic(board, move)
+    if depth >= depth_limit:
+        return getHeuristic2(board, move)
+    
+    if checkWin(board, move, 2):
+        return -1000000000
+    if checkWin(board, move, 1):
+        return 1000000000
 
     min_val = float('inf')
     children = genChildren(board, move, 2)
-    curr_depth += 1
+    depth += 1
     for moveTile, child in children.items():
-        eval = calc_max(child, moveTile, alpha, beta)
-        beta = min(beta, eval)
+        eval = calc_max(child, moveTile, alpha, beta, depth)
         min_val = min(min_val, eval)
-        if beta <= alpha:
+        if min_val <= alpha:
             break
-
+        beta = min(beta, min_val)
     return min_val
 
-def calc_max(board, move, alpha, beta):
-    global curr_depth
+def calc_max(board, move, alpha, beta, depth):
+    global depth_limit
 
-    if isTerminal():
+    if depth >= depth_limit:
         return getHeuristic2(board, move)
+    
+    if checkWin(board, move, 1):
+        return 1000000000
+    if checkWin(board, move, 2):
+        return -1000000000
 
     max_val = -float('inf')
     children = genChildren(board, move, 1)
-    curr_depth += 1
+    depth += 1
     for moveTile, child in children.items():
-        eval = calc_min(child, moveTile, alpha, beta)
-        alpha = max(alpha, eval)
-        max_val = max(eval, max_val)
-        if beta <= alpha:
+        eval = calc_min(child, moveTile, alpha, beta, depth)
+        max_val = max(max_val, eval)
+        if beta <= max_val:
             break
-
+        alpha = max(alpha, max_val)
     return max_val
-
-def isTerminal():
-    global depth_limit
-    global curr_depth
-    if (curr_depth >= depth_limit):
-        curr_depth = 0
-        return True
-    return False
 
 def play():
     global boards
@@ -180,13 +180,15 @@ def getHeuristic(board,boardnum):
     #if this is winning move
     score = 0
     if checkWin(board,boardnum,1):
-        score = 10
+        return 1000000000
+    elif checkWin(board, boardnum, 2):
+        return -1000000000
    # elif checkDraw(board,boardnum): #if move results in draw
    #     return 0
-    opp = genChildren(board,boardnum,2)
-    for i in opp:
-        if checkWin(opp[i],boardnum,2) == True:
-            score -= 1
+    #opp = genChildren(board,boardnum,2)
+    #for i in opp:
+    #    if checkWin(opp[i],boardnum,2) == True:
+    #        score -= 1
             
     #checking each row for x1 and x2 horizontally for each player
     adjacent=[0,0] #x2 array for both players 0 is player 1 is opponent
