@@ -24,13 +24,11 @@ import numpy as np
 # the boards are of size 10 because index 0 isn't used
 boards = np.zeros((10, 10), dtype="int8")
 s = [".","X","O"]
-<<<<<<< HEAD
-curr = 1 # this is the current board to play in
-depth_limit = 1 # Max depth iterate too
-=======
+
 curr = 0 # this is the current board to play in
-depth_limit = 3 # Max depth iterate too
->>>>>>> 1228535f72f5a6cb3e48f2c6165aef4839fe2b2c
+depth_limit = 1 # Max depth iterate too
+
+
 
 # print a row
 # This is just ported from game.c
