@@ -25,7 +25,8 @@ import numpy as np
 boards = np.zeros((10, 10), dtype="int8")
 s = [".","X","O"]
 curr = 0 # this is the current board to play in
-depth_limit = 3 # Max depth iterate too
+depth_limit = 0 # Max depth iterate too
+
 
 # print a row
 # This is just ported from game.c
@@ -179,15 +180,23 @@ def chooseMove():
 #move is the selected move to make
 def getHeuristic(board, prev_board, boardnum):    
     #if this is winning move
-    print("we are on ", prev_board, " and next ", boardnum)
-    return rowColHeuristic(board,prev_board) - rowColHeuristic(board,boardnum)
+    scoreUs = rowColHeuristic(board,prev_board,1)
+    scoreThem = rowColHeuristic(board,boardnum,2)
+    print ("our board is ", scoreUs, " their ", scoreThem, " in boards ", prev_board, " and ", boardnum)
+    
+    return  scoreUs + scoreThem
     
 
-def rowColHeuristic(board,boardnum):
+def rowColHeuristic(board,boardnum,player):
     score = 0
-    if checkWin(board,boardnum,1):
+    if player == 2:
+        opp = 1
+    else:
+        opp = 2
+        
+    if checkWin(board,boardnum,player):
         score += 100
-    elif checkWin(board, boardnum, 2):
+    elif checkWin(board, boardnum, opp):
         score -= 100
     elif checkDraw(board,boardnum): #if move results in draw
         return 0
@@ -195,12 +204,17 @@ def rowColHeuristic(board,boardnum):
     #for i in opp:
     #    if checkWin(opp[i],boardnum,2) == True:
     #        score -= 1
-
+    x = 1
+    y = 3
+    if (player == 2):
+        x=3
+        y=1
+    
             
     #checking each row for x1 and x2 horizontally for each player
     adjacent=[0,0] #x2 array for both players 0 is player 1 is opponent
     single=[0,0] #x1 array for both players
-    for j in range(1,3):
+    for j in range(x,y):
         for i in ([1,4,7]):  #for each row
             if board[boardnum][i] == j == board[boardnum][i+1] and board[boardnum][i+2] == 0: #check for X|X|0 
                 adjacent[j-1] += 10
