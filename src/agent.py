@@ -25,7 +25,7 @@ import numpy as np
 boards = np.zeros((10, 10), dtype="int8")
 s = [".","X","O"]
 curr = 0 # this is the current board to play in
-depth_limit = 6 # Max depth iterate too
+depth_limit = 2 # Max depth iterate too
 
 # print a row
 # This is just ported from game.c
@@ -182,7 +182,7 @@ def chooseMove():
 def getHeuristic(board, prev_board, boardnum):    
     #if this is winning move
     print("we are on ", prev_board, " and next ", boardnum)
-    return rowColHeuristic(board,prev_board)
+    return rowColHeuristic(board,prev_board) - rowColHeuristic(board,boardnum)
     
 
 def rowColHeuristic(board,boardnum):
