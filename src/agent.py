@@ -90,7 +90,7 @@ def calc_min(board, move, alpha, beta, depth):
         eval = calc_max(child, moveTile, alpha, beta, depth)
         min_val = min(min_val, eval)
         if min_val <= alpha:
-            return min_val
+            break
         beta = min(beta, min_val)
     return min_val
 
@@ -112,7 +112,7 @@ def calc_max(board, move, alpha, beta, depth):
         eval = calc_min(child, moveTile, alpha, beta, depth)
         max_val = max(max_val, eval)
         if beta <= max_val:
-            return max_val
+            break
         alpha = max(alpha, max_val)
     return max_val
 
