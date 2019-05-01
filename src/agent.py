@@ -206,131 +206,211 @@ def calc_h(board, currboard, player):
     them_array = []
     for i in range(1,10):
         # the rows
-        
-        oWeight = countMoves(board,i,2)
-        weight = countMoves(board,i,1)
-        if (player == 1):
-            weight*=2
-            oWeight*=4
-        else:
-            weight*=4
-            oWeight*=2
-       
-        
         if board[i][1] == board[i][2] == 1 and board[i][3] == 0:
-            us += 1 * weight
+            us += 1
+            if i not in us_array:
+                us_array.append(i)
         if board[i][1] == board[i][3] == 1 and board[i][2] == 0:
-            us += 1 * weight
+            us += 1
+            if i not in us_array:
+                us_array.append(i)
         if board[i][2] == board[i][3] == 1 and board[i][1] == 0:
-            us += 1 * weight
+            us += 1
+            if i not in us_array:
+                us_array.append(i)
         if board[i][4] == board[i][5] == 1 and board[i][6] == 0:
-            us += 1 * weight
+            us += 1
+            if i not in us_array:
+                us_array.append(i)
         if board[i][4] == board[i][6] == 1 and board[i][5] == 0:
-            us += 1 * weight
+            us += 1
+            if i not in us_array:
+                us_array.append(i)
         if board[i][5] == board[i][6] == 1 and board[i][4] == 0:
-            us += 1 * weight
+            us += 1
+            if i not in us_array:
+                us_array.append(i)
         if board[i][7] == board[i][8] == 1 and board[i][9] == 0:
-            us += 1 * weight
+            us += 1
+            if i not in us_array:
+                us_array.append(i)
         if board[i][7] == board[i][9] == 1 and board[i][8] == 0:
-            us += 1 * weight
+            us += 1
+            if i not in us_array:
+                us_array.append(i)
         if board[i][8] == board[i][9] == 1 and board[i][7] == 0:
-            us += 1 * weight
+            us += 1
+            if i not in us_array:
+                us_array.append(i)
 
         # the cols
         if board[i][1] == board[i][4] == 1 and board[i][7] == 0:
-            us += 1 * weight
+            us += 1
+            if i not in us_array:
+                us_array.append(i)
         if board[i][1] == board[i][7] == 1 and board[i][4] == 0:
-            us += 1 * weight
+            us += 1
+            if i not in us_array:
+                us_array.append(i)
         if board[i][4] == board[i][7] == 1 and board[i][1] == 0:
-            us += 1 * weight
+            us += 1
+            if i not in us_array:
+                us_array.append(i)
         if board[i][2] == board[i][5] == 1 and board[i][8] == 0:
-            us += 1 * weight
+            us += 1
+            if i not in us_array:
+                us_array.append(i)
         if board[i][2] == board[i][8] == 1 and board[i][5] == 0:
-            us += 1 * weight
+            us += 1
+            if i not in us_array:
+                us_array.append(i)
         if board[i][5] == board[i][8] == 1 and board[i][2] == 0:
-            us += 1 * weight
+            us += 1
+            if i not in us_array:
+                us_array.append(i)
         if board[i][3] == board[i][6] == 1 and board[i][9] == 0:
-            us += 1 * weight
+            us += 1
+            if i not in us_array:
+                us_array.append(i)
         if board[i][3] == board[i][9] == 1 and board[i][6] == 0:
-            us += 1 * weight
+            us += 1
+            if i not in us_array:
+                us_array.append(i)
         if board[i][6] == board[i][9] == 1 and board[i][3] == 0:
-            us += 1 * weight
+            us += 1
+            if i not in us_array:
+                us_array.append(i)
 
         # diagonals
         if board[i][1] == board[i][5] == 1 and board[i][9] == 0:
-            us += 1 * weight
+            us += 1
+            if i not in us_array:
+                us_array.append(i)
         if board[i][1] == board[i][9] == 1 and board[i][5] == 0:
-            us += 1 * weight
+            us += 1
+            if i not in us_array:
+                us_array.append(i)
         if board[i][5] == board[i][9] == 1 and board[i][1] == 0:
-            us += 1 * weight
+            us += 1
+            if i not in us_array:
+                us_array.append(i)
         if board[i][3] == board[i][5] == 1 and board[i][7] == 0:
-            us += 1 * weight
+            us += 1
+            if i not in us_array:
+                us_array.append(i)
         if board[i][3] == board[i][7] == 1 and board[i][5] == 0:
-            us += 1 * weight
+            us += 1
+            if i not in us_array:
+                us_array.append(i)
         if board[i][5] == board[i][7] == 1 and board[i][3] == 0:
-            us += 1 * weight
-
-
+            us += 1
+            if i not in us_array:
+                us_array.append(i)
 
         # the rows for them
         if board[i][1] == board[i][2] == 2 and board[i][3] == 0:
-            them += 1 * oWeight
+            them += 1
+            if i not in them_array:
+                them_array.append(i)
         if board[i][1] == board[i][3] == 2 and board[i][2] == 0:
-            them += 1 * oWeight
+            them += 1
+            if i not in them_array:
+                them_array.append(i)
         if board[i][2] == board[i][3] == 2 and board[i][1] == 0:
-            them += 1 * oWeight
+            them += 1
+            if i not in them_array:
+                them_array.append(i)
         if board[i][4] == board[i][5] == 2 and board[i][6] == 0:
-            them += 1 * oWeight
+            them += 1
+            if i not in them_array:
+                them_array.append(i)
         if board[i][4] == board[i][6] == 2 and board[i][5] == 0:
-            them += 1 * oWeight
+            them += 1
+            if i not in them_array:
+                them_array.append(i)
         if board[i][5] == board[i][6] == 2 and board[i][4] == 0:
-            them += 1 * oWeight
+            them += 1
+            if i not in them_array:
+                them_array.append(i)
         if board[i][7] == board[i][8] == 2 and board[i][9] == 0:
-            them += 1 * oWeight
+            them += 1
+            if i not in them_array:
+                them_array.append(i)
         if board[i][7] == board[i][9] == 2 and board[i][8] == 0:
-            them += 1 * oWeight
+            them += 1
+            if i not in them_array:
+                them_array.append(i)
         if board[i][8] == board[i][9] == 2 and board[i][7] == 0:
             them += 1
 
         # the cols
         if board[i][1] == board[i][4] == 2 and board[i][7] == 0:
-            them += 1 * oWeight
+            them += 1
+            if i not in them_array:
+                them_array.append(i)
         if board[i][1] == board[i][7] == 2 and board[i][4] == 0:
-            them += 1 * oWeight
+            them += 1
+            if i not in them_array:
+                them_array.append(i)
         if board[i][4] == board[i][7] == 2 and board[i][1] == 0:
-            them += 1 * oWeight
+            them += 1
+            if i not in them_array:
+                them_array.append(i)
         if board[i][2] == board[i][5] == 2 and board[i][8] == 0:
-            them += 1 * oWeight
+            them += 1
+            if i not in them_array:
+                them_array.append(i)
         if board[i][2] == board[i][8] == 2 and board[i][5] == 0:
-            them += 1 * oWeight
+            them += 1
+            if i not in them_array:
+                them_array.append(i)
         if board[i][5] == board[i][8] == 2 and board[i][2] == 0:
-            them += 1 * oWeight
+            them += 1
+            if i not in them_array:
+                them_array.append(i)
         if board[i][3] == board[i][6] == 2 and board[i][9] == 0:
-            them += 1 * oWeight
+            them += 1
+            if i not in them_array:
+                them_array.append(i)
         if board[i][3] == board[i][9] == 2 and board[i][6] == 0:
-            them += 1 * oWeight
+            them += 1
+            if i not in them_array:
+                them_array.append(i)
         if board[i][6] == board[i][9] == 2 and board[i][3] == 0:
             them += 1
+            if i not in them_array:
+                them_array.append(i)
 
         # diagonals
         if board[i][1] == board[i][5] == 2 and board[i][9] == 0:
-            them += 1 * oWeight
+            them += 1
+            if i not in them_array:
+                them_array.append(i)
         if board[i][1] == board[i][9] == 2 and board[i][5] == 0:
-            them += 1 * oWeight
+            them += 1
+            if i not in them_array:
+                them_array.append(i)
         if board[i][5] == board[i][9] == 2 and board[i][1] == 0:
-            them += 1 * oWeight
+            them += 1
+            if i not in them_array:
+                them_array.append(i)
         if board[i][3] == board[i][5] == 2 and board[i][7] == 0:
-            them += 1 * oWeight
+            them += 1
+            if i not in them_array:
+                them_array.append(i)
         if board[i][3] == board[i][7] == 2 and board[i][5] == 0:
-            them += 1 * oWeight
+            them += 1
+            if i not in them_array:
+                them_array.append(i)
         if board[i][5] == board[i][7] == 2 and board[i][3] == 0:
-            them += 1 * oWeight
-    
-    
+            them += 1
+            if i not in them_array:
+                them_array.append(i)
+
     if player == 1:
-        return us - them
+        return us + 1 - them + 3*(len(us_array) - len(them_array))
     else:
-        return them - us 
+        return them - 1 - us + 3*(len(them_array) - len(us_array))
 
 #get a heuristic for a board
 #board is the board we are using
