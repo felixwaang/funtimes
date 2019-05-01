@@ -88,9 +88,7 @@ def calc_min(board, move, alpha, beta, depth, curr_move):
 
     if depth >= depth_limit:
         #return getHeuristic(board, curr_move, move, 1)
-        return calc_h(board, 1)
-
-    min_val = float('inf')
+        return calc_h(board, move, 1)
 
     children = genChildren(board, move, 2)
     depth += 1
@@ -110,9 +108,7 @@ def calc_max(board, move, alpha, beta, depth, curr_move):
 
     if depth >= depth_limit:
         #return getHeuristic(board, curr_move, move, 2)
-        return calc_h(board, 2)
-
-    max_val = -float('inf')
+        return calc_h(board, move, 2)
 
     children = genChildren(board, move, 1)
     depth += 1
@@ -120,11 +116,23 @@ def calc_max(board, move, alpha, beta, depth, curr_move):
         eval = calc_min(child, moveTile, alpha, beta, depth, move)
         alpha = max(alpha, eval)
         if beta <= alpha:
-            break
-        
+            break      
     return alpha
 
 def play():
+    global boards
+    print_board(boards)
+    moveToMake = alphabeta(boards)
+    if moveToMake == 0:
+        for i in range(1,10):
+            if boards[curr][i] == 0:
+                place(curr, i, 1)
+                return i
+    else:
+        place(curr, moveToMake, 1)
+        return moveToMake
+
+def play2():
     global boards
     print_board(boards)
     possible = []
@@ -190,9 +198,11 @@ def countMoves(board,boardnum,player):
             scores[1] += 1
     return 2*scores[0]/scores[1] if scores[1] else 0
 ### NEW HEURISTIC?? Tries to add up everytime ###
-def calc_h(board, player):
+def calc_h(board, currboard, player):
     us = 0 # we are player 1
+    us_array = []
     them = 0 # they are player 2
+    them_array = []
     for i in range(1,10):
         # the rows
         weight = countMoves(board,i,player)
@@ -248,6 +258,8 @@ def calc_h(board, player):
             us += 1 * weight
         if board[i][5] == board[i][7] == 1 and board[i][3] == 0:
             us += 1 * weight
+
+
 
         # the rows for them
         if board[i][1] == board[i][2] == 2 and board[i][3] == 0:
@@ -305,7 +317,7 @@ def calc_h(board, player):
     
     
     if player == 1:
-        return us+1 - them
+        return us + 1 - them
     else:
         return them - us - 1
 
