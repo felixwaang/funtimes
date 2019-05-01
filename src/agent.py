@@ -7,6 +7,7 @@ import copy
 import socket
 import sys
 import numpy as np
+import random
 
 ###### For Daniel:
 # i think the minimax function is correct or somewhat working
@@ -26,7 +27,7 @@ boards = np.zeros((10, 10), dtype="int8")
 s = [".","X","O"]
 curr = 0 # this is the current board to play in
 
-depth_limit = 0 # Max depth iterate too
+depth_limit = 5 # Max depth iterate too
 
 
 # print a row
@@ -61,6 +62,7 @@ def alphabeta(board):
     global depth_limit
     depth = 0
     # Set up alpha and beta
+
     alpha = -float('inf')
     beta = float('inf')
 
@@ -74,6 +76,7 @@ def alphabeta(board):
         if eval > alpha:
             alpha = eval
             nextMove = moveTile
+
     print ("whats my next move?", nextMove, " in board ", curr)
     return nextMove # this returns the next move to make
 
@@ -81,10 +84,11 @@ def calc_min(board, move, alpha, beta, depth, curr_move):
     global depth_limit
 
     if checkWin(board, curr_move, 1):
-        return 1000000000
+        return float('inf')
 
     if depth >= depth_limit:
-        return getHeuristic(board, curr_move, move, 1)
+        #return getHeuristic(board, curr_move, move, 1)
+        return calc_h(board, 1)
 
     min_val = float('inf')
 
@@ -92,20 +96,21 @@ def calc_min(board, move, alpha, beta, depth, curr_move):
     depth += 1
     for moveTile, child in children.items():
         eval = calc_max(child, moveTile, alpha, beta, depth, move)
-        min_val = min(min_val, eval)
-        if min_val <= alpha:
+        beta = min(beta, eval)
+        if beta <= alpha:
             break
-        beta = min(beta, min_val)
-    return min_val
+        
+    return beta
 
 def calc_max(board, move, alpha, beta, depth, curr_move):
     global depth_limit
 
     if checkWin(board, curr_move, 2):
-        return -1000000000
+        return -float('inf')
 
     if depth >= depth_limit:
-        return getHeuristic(board, curr_move, move, 2)
+        #return getHeuristic(board, curr_move, move, 2)
+        return calc_h(board, 2)
 
     max_val = -float('inf')
 
@@ -113,11 +118,11 @@ def calc_max(board, move, alpha, beta, depth, curr_move):
     depth += 1
     for moveTile, child in children.items():
         eval = calc_min(child, moveTile, alpha, beta, depth, move)
-        max_val = max(max_val, eval)
-        if beta <= max_val:
+        alpha = max(alpha, eval)
+        if beta <= alpha:
             break
-        alpha = max(alpha, max_val)
-    return max_val
+        
+    return alpha
 
 def play():
     global boards
@@ -126,7 +131,7 @@ def play():
 
     for i in range(1,10):
         if boards[curr][i] == 0:
-            nextMove = boards.copy()
+            nextMove = copy.deepcopy(boards)
             nextMove[curr][i] = 1
             if checkWin(nextMove, curr, 1):
                 print ("winning move yeet")
@@ -174,6 +179,135 @@ def chooseMove():
                     else:
                         possible.append(i)
     return possible
+def countMoves(board,boardnum,player):
+    scores = [0,0]
+    for i in range(1,10):
+        if board[boardnum][i] == player:
+            scores[0] += 1
+        elif board[boardnum][i] == 0:
+            continue
+        else:
+            scores[1] += 1
+    return 2*scores[0]/scores[1] if scores[1] else 0
+### NEW HEURISTIC?? Tries to add up everytime ###
+def calc_h(board, player):
+    us = 0 # we are player 1
+    them = 0 # they are player 2
+    for i in range(1,10):
+        # the rows
+        weight = countMoves(board,i,player)
+        if board[i][1] == board[i][2] == 1 and board[i][3] == 0:
+            us += 1 * weight
+        if board[i][1] == board[i][3] == 1 and board[i][2] == 0:
+            us += 1 * weight
+        if board[i][2] == board[i][3] == 1 and board[i][1] == 0:
+            us += 1 * weight
+        if board[i][4] == board[i][5] == 1 and board[i][6] == 0:
+            us += 1 * weight
+        if board[i][4] == board[i][6] == 1 and board[i][5] == 0:
+            us += 1 * weight
+        if board[i][5] == board[i][6] == 1 and board[i][4] == 0:
+            us += 1 * weight
+        if board[i][7] == board[i][8] == 1 and board[i][9] == 0:
+            us += 1 * weight
+        if board[i][7] == board[i][9] == 1 and board[i][8] == 0:
+            us += 1 * weight
+        if board[i][8] == board[i][9] == 1 and board[i][7] == 0:
+            us += 1 * weight
+
+        # the cols
+        if board[i][1] == board[i][4] == 1 and board[i][7] == 0:
+            us += 1 * weight
+        if board[i][1] == board[i][7] == 1 and board[i][4] == 0:
+            us += 1 * weight
+        if board[i][4] == board[i][7] == 1 and board[i][1] == 0:
+            us += 1 * weight
+        if board[i][2] == board[i][5] == 1 and board[i][8] == 0:
+            us += 1 * weight
+        if board[i][2] == board[i][8] == 1 and board[i][5] == 0:
+            us += 1 * weight
+        if board[i][5] == board[i][8] == 1 and board[i][2] == 0:
+            us += 1 * weight
+        if board[i][3] == board[i][6] == 1 and board[i][9] == 0:
+            us += 1 * weight
+        if board[i][3] == board[i][9] == 1 and board[i][6] == 0:
+            us += 1 * weight
+        if board[i][6] == board[i][9] == 1 and board[i][3] == 0:
+            us += 1 * weight
+
+        # diagonals
+        if board[i][1] == board[i][5] == 1 and board[i][9] == 0:
+            us += 1 * weight
+        if board[i][1] == board[i][9] == 1 and board[i][5] == 0:
+            us += 1 * weight
+        if board[i][5] == board[i][9] == 1 and board[i][1] == 0:
+            us += 1 * weight
+        if board[i][3] == board[i][5] == 1 and board[i][7] == 0:
+            us += 1 * weight
+        if board[i][3] == board[i][7] == 1 and board[i][5] == 0:
+            us += 1 * weight
+        if board[i][5] == board[i][7] == 1 and board[i][3] == 0:
+            us += 1 * weight
+
+        # the rows for them
+        if board[i][1] == board[i][2] == 2 and board[i][3] == 0:
+            them += 1
+        if board[i][1] == board[i][3] == 2 and board[i][2] == 0:
+            them += 1
+        if board[i][2] == board[i][3] == 2 and board[i][1] == 0:
+            them += 1
+        if board[i][4] == board[i][5] == 2 and board[i][6] == 0:
+            them += 1
+        if board[i][4] == board[i][6] == 2 and board[i][5] == 0:
+            them += 1
+        if board[i][5] == board[i][6] == 2 and board[i][4] == 0:
+            them += 1
+        if board[i][7] == board[i][8] == 2 and board[i][9] == 0:
+            them += 1
+        if board[i][7] == board[i][9] == 2 and board[i][8] == 0:
+            them += 1
+        if board[i][8] == board[i][9] == 2 and board[i][7] == 0:
+            them += 1
+
+        # the cols
+        if board[i][1] == board[i][4] == 2 and board[i][7] == 0:
+            them += 1
+        if board[i][1] == board[i][7] == 2 and board[i][4] == 0:
+            them += 1
+        if board[i][4] == board[i][7] == 2 and board[i][1] == 0:
+            them += 1
+        if board[i][2] == board[i][5] == 2 and board[i][8] == 0:
+            them += 1
+        if board[i][2] == board[i][8] == 2 and board[i][5] == 0:
+            them += 1
+        if board[i][5] == board[i][8] == 2 and board[i][2] == 0:
+            them += 1
+        if board[i][3] == board[i][6] == 2 and board[i][9] == 0:
+            them += 1
+        if board[i][3] == board[i][9] == 2 and board[i][6] == 0:
+            them += 1
+        if board[i][6] == board[i][9] == 2 and board[i][3] == 0:
+            them += 1
+
+        # diagonals
+        if board[i][1] == board[i][5] == 2 and board[i][9] == 0:
+            them += 1
+        if board[i][1] == board[i][9] == 2 and board[i][5] == 0:
+            them += 1
+        if board[i][5] == board[i][9] == 2 and board[i][1] == 0:
+            them += 1
+        if board[i][3] == board[i][5] == 2 and board[i][7] == 0:
+            them += 1
+        if board[i][3] == board[i][7] == 2 and board[i][5] == 0:
+            them += 1
+        if board[i][5] == board[i][7] == 2 and board[i][3] == 0:
+            them += 1
+    
+    
+    if player == 1:
+        return us+1 - them
+    else:
+        return them - us - 1
 
 #get a heuristic for a board
 #board is the board we are using
@@ -201,8 +335,6 @@ def getHeuristic(board, prev_board, boardnum, player):
     
     return scoreUs - 1.2*scoreThem
 
-    
-
 def rowColHeuristic(board,boardnum,player):
 
     score = 0
@@ -214,12 +346,11 @@ def rowColHeuristic(board,boardnum,player):
         
     #if we win, move is good    
     if checkWin(board,boardnum,player):
-        return 100
-    elif checkWin(board, boardnum, opp): #if we lose
-        return -100
+        return float('inf')
+    elif checkWin(board, boardnum, opp):
+        return -float('inf')
     elif checkDraw(board,boardnum): #if move results in draw
         return 0
-    
     
     
     #checking each row for x1 and x2 horizontally for each player
