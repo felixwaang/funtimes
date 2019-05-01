@@ -27,7 +27,7 @@ boards = np.zeros((10, 10), dtype="int8")
 s = [".","X","O"]
 curr = 0 # this is the current board to play in
 
-depth_limit = 6 # Max depth iterate too
+depth_limit = 5 # Max depth iterate too
 
 
 # print a row
@@ -422,9 +422,9 @@ def calc_h(board, currboard, player):
                 them_array.append(i)
 
     if player == 1:
-        return us + 2 - them + 3*(len(us_array) - len(them_array))
+        return us + 1 - them + 3*(len(us_array) - len(them_array))
     else:
-        return them - 2 - us - 3*(len(them_array) - len(us_array))
+        return them - 1 - us + 3*(len(them_array) - len(us_array))
 
 #get a heuristic for a board
 #board is the board we are using
@@ -434,22 +434,16 @@ def getHeuristic(board, prev_board, boardnum, player):
     #if this is winning move
     scoreUs = 0
     scoreThem = 0
-    if player == 1:
-        for i in range(1,10):        
-            scoreUs += rowColHeuristic(board,i,1)
-            scoreThem += rowColHeuristic(board,i,2)
+    if player == 1:      
+        scoreUs += rowColHeuristic(board,prev_board,1)
+        scoreThem += rowColHeuristic(board,boardnum,2)
 
     else:
-        for i in range(1,10):
-            scoreUs += rowColHeuristic(board,i,2)
-            scoreThem += rowColHeuristic(board,i,1)     
+        scoreUs += rowColHeuristic(board,prev_board,2)
+        scoreThem += rowColHeuristic(board,boardnum,1)     
 
     print ("our board is ", scoreUs, " their ", scoreThem, " in boards ", prev_board, " and ", boardnum)
-    
-    
-    
-    
-    
+
     return scoreUs - 1.2*scoreThem
 
 def rowColHeuristic(board,boardnum,player):
