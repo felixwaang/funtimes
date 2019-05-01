@@ -27,7 +27,7 @@ boards = np.zeros((10, 10), dtype="int8")
 s = [".","X","O"]
 curr = 0 # this is the current board to play in
 
-depth_limit = 5 # Max depth iterate too
+depth_limit = 4 # Max depth iterate too
 
 
 # print a row
@@ -187,6 +187,7 @@ def chooseMove():
                     else:
                         possible.append(i)
     return possible
+    
 def countMoves(board,boardnum,player):
     scores = [0,0]
     for i in range(1,10):
@@ -205,7 +206,17 @@ def calc_h(board, currboard, player):
     them_array = []
     for i in range(1,10):
         # the rows
-        weight = countMoves(board,i,player)
+        
+        oWeight = countMoves(board,i,2)
+        weight = countMoves(board,i,1)
+        if (player == 1):
+            weight*=2
+            oWeight*=4
+        else:
+            weight*=4
+            oWeight*=2
+       
+        
         if board[i][1] == board[i][2] == 1 and board[i][3] == 0:
             us += 1 * weight
         if board[i][1] == board[i][3] == 1 and board[i][2] == 0:
@@ -263,63 +274,63 @@ def calc_h(board, currboard, player):
 
         # the rows for them
         if board[i][1] == board[i][2] == 2 and board[i][3] == 0:
-            them += 1
+            them += 1 * oWeight
         if board[i][1] == board[i][3] == 2 and board[i][2] == 0:
-            them += 1
+            them += 1 * oWeight
         if board[i][2] == board[i][3] == 2 and board[i][1] == 0:
-            them += 1
+            them += 1 * oWeight
         if board[i][4] == board[i][5] == 2 and board[i][6] == 0:
-            them += 1
+            them += 1 * oWeight
         if board[i][4] == board[i][6] == 2 and board[i][5] == 0:
-            them += 1
+            them += 1 * oWeight
         if board[i][5] == board[i][6] == 2 and board[i][4] == 0:
-            them += 1
+            them += 1 * oWeight
         if board[i][7] == board[i][8] == 2 and board[i][9] == 0:
-            them += 1
+            them += 1 * oWeight
         if board[i][7] == board[i][9] == 2 and board[i][8] == 0:
-            them += 1
+            them += 1 * oWeight
         if board[i][8] == board[i][9] == 2 and board[i][7] == 0:
             them += 1
 
         # the cols
         if board[i][1] == board[i][4] == 2 and board[i][7] == 0:
-            them += 1
+            them += 1 * oWeight
         if board[i][1] == board[i][7] == 2 and board[i][4] == 0:
-            them += 1
+            them += 1 * oWeight
         if board[i][4] == board[i][7] == 2 and board[i][1] == 0:
-            them += 1
+            them += 1 * oWeight
         if board[i][2] == board[i][5] == 2 and board[i][8] == 0:
-            them += 1
+            them += 1 * oWeight
         if board[i][2] == board[i][8] == 2 and board[i][5] == 0:
-            them += 1
+            them += 1 * oWeight
         if board[i][5] == board[i][8] == 2 and board[i][2] == 0:
-            them += 1
+            them += 1 * oWeight
         if board[i][3] == board[i][6] == 2 and board[i][9] == 0:
-            them += 1
+            them += 1 * oWeight
         if board[i][3] == board[i][9] == 2 and board[i][6] == 0:
-            them += 1
+            them += 1 * oWeight
         if board[i][6] == board[i][9] == 2 and board[i][3] == 0:
             them += 1
 
         # diagonals
         if board[i][1] == board[i][5] == 2 and board[i][9] == 0:
-            them += 1
+            them += 1 * oWeight
         if board[i][1] == board[i][9] == 2 and board[i][5] == 0:
-            them += 1
+            them += 1 * oWeight
         if board[i][5] == board[i][9] == 2 and board[i][1] == 0:
-            them += 1
+            them += 1 * oWeight
         if board[i][3] == board[i][5] == 2 and board[i][7] == 0:
-            them += 1
+            them += 1 * oWeight
         if board[i][3] == board[i][7] == 2 and board[i][5] == 0:
-            them += 1
+            them += 1 * oWeight
         if board[i][5] == board[i][7] == 2 and board[i][3] == 0:
-            them += 1
+            them += 1 * oWeight
     
     
     if player == 1:
-        return us + 1 - them
+        return us - them
     else:
-        return them - us - 1
+        return them - us 
 
 #get a heuristic for a board
 #board is the board we are using
