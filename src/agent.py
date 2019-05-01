@@ -181,36 +181,41 @@ def chooseMove():
 #move is the selected move to make
 def getHeuristic(board, prev_board, boardnum, player):    
     #if this is winning move
+    scoreUs = 0
+    scoreThem = 0
     if player == 1:
-        scoreUs = rowColHeuristic(board,prev_board,1)
-        scoreThem = rowColHeuristic(board,boardnum,2)
+        for i in range(1,10):        
+            scoreUs += rowColHeuristic(board,i,1)
+            scoreThem += rowColHeuristic(board,i,2)
 
     else:
-        scoreUs = rowColHeuristic(board,prev_board,2)
-        scoreThem = rowColHeuristic(board,boardnum,1)        
+        for i in range(1,10):
+            scoreUs += rowColHeuristic(board,i,2)
+            scoreThem += rowColHeuristic(board,i,1)     
+
     print ("our board is ", scoreUs, " their ", scoreThem, " in boards ", prev_board, " and ", boardnum)
     
-    return scoreUs - scoreThem
+    
+    
+    
+    
+    return scoreUs - 1.2*scoreThem
 
     
 
 def rowColHeuristic(board,boardnum,player):
+
     score = 0
+    #if calculating heuristic for opponent, then we are the opponent from their perspective
     if player == 2:
         opp = 1
     else:
         opp = 2
         
- #   if checkWin(board,boardnum,player):
-  #      score += 100
-  #  elif checkWin(board, boardnum, opp):
-   #     score -= 100
- #   elif checkDraw(board,boardnum): #if move results in draw
-     #   return 0
-        
+    #if we win, move is good    
     if checkWin(board,boardnum,player):
         return 100
-    elif checkWin(board, boardnum, opp):
+    elif checkWin(board, boardnum, opp): #if we lose
         return -100
     elif checkDraw(board,boardnum): #if move results in draw
         return 0
@@ -234,8 +239,7 @@ def rowColHeuristic(board,boardnum,player):
                 single[j-1] += 1            
             elif board[boardnum][i] == j == board[boardnum][i+2] and board[boardnum][i+1] == 0: # if X|0|X
                 adjacent[j-1] += 10
-    #columns
-    for j in range(1,3):
+        #columns       
         for i in ([1,2,3]):  #for each column
             if board[boardnum][i] == j == board[boardnum][i+3] and board[boardnum][i+6] == 0: #check for X|X|0 (in columns)
                 adjacent[j-1] += 10
@@ -249,9 +253,7 @@ def rowColHeuristic(board,boardnum,player):
                 single[j-1] += 1  
             elif board[boardnum][i] == j == board[boardnum][i+6] and board[boardnum][i+3] == 0: # if X|0|X
                 adjacent[j-1] += 10
-
     #diagonals
-    for j in range(1,3):
         if board[boardnum][1] == j == board[boardnum][5] and board[boardnum][9] == 0:
             adjacent[j-1] += 10
         elif board[boardnum][1] == j == board[boardnum][9] and board[boardnum][5] == 0:
@@ -264,7 +266,6 @@ def rowColHeuristic(board,boardnum,player):
             single[j-1] += 1
         elif board[boardnum][1] == 0 == board[boardnum][5] and board[boardnum][9] == j:
             single[j-1] += 1
-
         if board[boardnum][3] == j == board[boardnum][5] and board[boardnum][7] == 0:
             adjacent[j-1] += 10
         elif board[boardnum][3] == j == board[boardnum][7] and board[boardnum][5] == 0:
@@ -281,14 +282,9 @@ def rowColHeuristic(board,boardnum,player):
     #score += 3*adjacent[0] + single[0] - (3*adjacent[1]+single[1])
 
     if player == 2:
-       # score += (3*adjacent[1]+single[1]) - 3*adjacent[0] + single[0] 
-        score -= adjacent[0] + single[0]
-        score += (adjacent[1] + single[1])
-        
+        score += ((1.2*adjacent[1]) + single[1] - adjacent[0] + single[0])
     else:
-       # score += 3*adjacent[0] + single[0] - (3*adjacent[1]+single[1])
-        score += adjacent[0] + single[0]
-        score -= adjacent[1] + single[1]
+        score += (adjacent[0] + single[0] - adjacent[1] + single[1])
 
     return score
 
