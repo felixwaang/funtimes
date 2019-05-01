@@ -1,36 +1,68 @@
 #!/usr/bin/python3
-# Sample starter bot by Zac Partridge
-# Contact me at z.partridge@unsw.edu.au
-# 06/04/19
-# Feel free to use this and modify it however you wish
-import copy
+# 9x9 Tic Tac Toe AI.
+# Written by Felix Wang (z5112711) and Daniel Wu (z5114131)
+# Last modified: 01/05/2019
+# Parsing in the inputs, credits to Zac Partridge (z.partridge@unsw.edu.au)
+
+
+##################################################################################################
+# Briefly describe how your program works:                                                       #
+# We employed an Alpha Beta Search using an evaluator (heuristic). The Alpha Beta Search         #
+# calculates the heuristic only at the leaf nodes (i.e. when the depth of the child has          #
+# exceeded the depth limit, or when a child evaluates as a won position). We attempt to increase #
+# the depth limit as we make more moves as there are less children to evaluate. Our heuristic    #
+# is evaluated by: (how many boards we can currently win in * how many ways we can win) -        #
+# (how many boards they can win in * how many ways they can win). Ultimately, the Heuristic      #
+# creates a snap shot of what the board can look like after the depth limit has been reached,    #
+# and we attempt to make the moves to achieve the most favourable board for us. We use the       #
+# Alpha Beta search to choose the best move based on the heuristic at every level (maximiser     #
+# for us, minimiser for them).                                                                   #
+#                                                                                                #
+# Algorithms and data structures employed:                                                       #
+# - Alpha beta search                                                                            #
+# - Heuristic is a modified version of the week 5 tute one                                       #
+# - Maintain possible board moves as a dictionary for efficiency                                 #
+# - Boards are by a 2D arrays, board[i][j] where i is which 3x3 board, j is which tile inside    #
+#                                                                                                #
+# Design decisions made:                                                                         #
+# - Originally we used copy.deepcopy() to create each board state one by one, however deepcopy   #
+# requires some time and slowed our program down. Hence, instead, we would make a move on the    #
+# current board and after evaluation, undo the moves from the current board.                     #
+# - Heuristic used to be a double for loop to go over every board. Instead we opted for a        #
+# single for loop with a bunch of if statements to make it slightly quicker.                     #
+# - Depth Limit is increased as we go deeper into the game as less children nodes need to be     #
+# expanded, this helps reduce unnecessary computation in the beginning to allow our program      #
+# to run faster and as we go towards the end, better evaluation of positions.                    #
+# - We modified the week 5 tute heuristic as we needed to understand how good our position is    #
+# taking in a count of all 9 boards rather than a sub 3x3 board. Evaluating just a 3x3 board     #
+# would cause our AI to evaluate a move as good if it helped us make 2 in a row, but lose on     #
+# the very next turn.                                                                            #
+# - Used Alpha beta over MCTS as MCTS isn't able to simulate enough games to identify the        #
+# best possible move as we have a short time limit.                                              #
+# - Used Python as it's the easiest language to code this project in, however, we understand     #
+# the drawbacks of python being incredibly slow.                                                 #
+##################################################################################################       
+
 import socket
 import sys
 import numpy as np
-import random
 
-###### For Daniel:
-# i think the minimax function is correct or somewhat working
-# our heuristic is rlly bad.... TODO: Better heuristic 
-# I think maybe our isTerminal is incorrect....
-# maybe isterminal can take in a board, and check if its done...?
-# Defs need to fix heuristic first to know if isterminal is bad
-
-
-# a board cell can hold:
+# A board cell can hold:
 #   0 - Empty
 #   1 - I played here
 #   2 - They played here
 
-# the boards are of size 10 because index 0 isn't used
+# The boards are of size 10 because index 0 isn't used
 boards = np.zeros((10, 10), dtype="int8")
 s = [".","X","O"]
-curr = 0 # this is the current board to play in
+# Current board to play in
+curr = 0
+# Number of moves played, used to increase depth_limit
 num_moves_made = 0
-depth_limit = 5 # Max depth iterate too
+# Depth Limit, how many levels of child boards to create
+depth_limit = 5
 
-
-# print a row
+# Print a row of the board
 # This is just ported from game.c
 def print_board_row(board, a, b, c, i, j, k):
     print(" "+s[board[a][i]]+" "+s[board[a][j]]+" "+s[board[a][k]]+" | " \
@@ -53,47 +85,58 @@ def print_board(board):
     print_board_row(board, 7,8,9,7,8,9)
     print()
 
-### Alpha Beta stuff ###
-# Note that moveTile is the next board the move needs to be played on
-# curr_move is where the move was played on current board
+#########################################################################
+########################### Alpha Beta Search ###########################
+#########################################################################
 
+# Initial Alpha beta step - Finds max values from child nodes
+# Params: board -> state of the 9x9 board
+# Returns: The next move to make
 def alphabeta(board):
+    # Global variables: curr -> current board number
     global curr
-    global depth_limit
+    # Depth -> level of depth for the child board 
     depth = 0
-    # Set up alpha and beta
+    # Move to return, 0 if no good moves, else, 
+    nextMove = 0
 
+    # Set up alpha (max value, initiate as -infinity)
     alpha = -float('inf')
+    # Set up beta (min value, initiate as infinity)
     beta = float('inf')
 
+    # All possible moves that can be made on this board
     children = possibleMoves(board, curr)
     depth += 1
-    nextMove = 0
+
     for child in children:
         board[curr][child] = 1
         eval = calc_min(board, child, alpha, beta, depth, curr)
         board[curr][child] = 0
-        print ("Move Tile is:", child)
-        print ("Evaluation is:", eval)
         if eval > alpha:
             alpha = eval
             nextMove = child
-
-    print ("whats my next move?", nextMove, " in board ", curr)
     return nextMove # this returns the next move to make
 
+# Minimizer. 
+# Params: board -> curr board state, move -> new board to play on
+#         alpha -> alpha value, beta -> beta value
+#         depth -> level of child, curr_move -> previous board played
+# Returns: The minimizer move.
 def calc_min(board, move, alpha, beta, depth, curr_move):
     global depth_limit
 
+    # Checks if we made a winning move last move
     if checkWin(board, curr_move, 1):
         return float('inf')
 
+    # If depth of child passes the limit
     if depth >= depth_limit:
-        #return getHeuristic(board, curr_move, move, 1)
-        return calc_h(board, move, 1)
+        return calc_h(board)
 
     children = possibleMoves(board, move)
     depth += 1
+
     for child in children:
         board[move][child] = 2
         eval = calc_max(board, child, alpha, beta, depth, move)
@@ -101,21 +144,27 @@ def calc_min(board, move, alpha, beta, depth, curr_move):
         board[move][child] = 0
         if beta <= alpha:
             break
-        
     return beta
 
+# Maximizer.
+# Params: board -> curr board state, move -> new board to play on
+#         alpha -> alpha value, beta -> beta value
+#         depth -> level of child, curr_move -> previous board played
+# Returns: The maximizer move.
 def calc_max(board, move, alpha, beta, depth, curr_move):
     global depth_limit
 
+    # Check if they made a winning move last move
     if checkWin(board, curr_move, 2):
         return -float('inf')
 
+    # If depth of child passes the limit
     if depth >= depth_limit:
-        #return getHeuristic(board, curr_move, move, 2)
-        return calc_h(board, move, 2)
+        return calc_h(board)
 
     children = possibleMoves(board, move)
     depth += 1
+
     for child in children:
         board[move][child] = 1
         eval = calc_min(board, child, alpha, beta, depth, move)
@@ -124,15 +173,24 @@ def calc_max(board, move, alpha, beta, depth, curr_move):
         if beta <= alpha:
             break      
     return alpha
+
+#########################################################################
+########################### End of Alpha Beta ###########################
+#########################################################################
+
+# All the possible moves that can be made on the current 3x3 board
+# Params: board -> current 9x9 board state, boardnum -> which 3x3 board to play
+# Returns: Dictionary with all the possible moves that can be made
 def possibleMoves(board,boardnum):
-    # dictionary instead board -> move played
     moves = {}
     for i in range(1,10):
         if board[boardnum][i] == 0:
             moves[i] = i
     return moves
     
-    
+# Finds which move to play.
+# If we are losing in every move, make a random move
+# Else, play what was suggested by Alpha Beta Search    
 def play():
     global boards
     print_board(boards)
@@ -145,82 +203,26 @@ def play():
     else:
         place(curr, moveToMake, 1)
         return moveToMake
-
-def play2():
-    global boards
-    print_board(boards)
-    possible = []
-
-    for i in range(1,10):
-        if boards[curr][i] == 0:
-            nextMove = copy.deepcopy(boards)
-            nextMove[curr][i] = 1
-            if checkWin(nextMove, curr, 1):
-                print ("winning move yeet")
-                return i
-            else:
-                children = genChildren(nextMove, i, 2)
-                for j in children.values():
-                    if checkWin(j, i, 2):
-                        continue
-                    else:
-                        possible.append(i)
-
-    moveToMake = alphabeta(boards)
-    if moveToMake not in possible and possible:
-        print ("all the possible", possible)
-        place(curr, possible[0], 1)
-        return possible[0]
-    else:
-        place(curr, moveToMake, 1)
-        return moveToMake
-
-### End of Alpha Beta Stuff ###
-
-def chooseMove():
-    global boards
-    possible = []
-
-    for i in range(1,10):
-        if boards[curr][i] == 0:
-            yes = getHeuristic(boards,curr,i)
-            print(yes, " is heuristic")
-            nextMove = boards.copy()
-            nextMove[curr][i] = 1 
-            if checkWin(nextMove,curr,1):
-                print("winning move yeet")
-                win = []
-                win.append(i)
-                return win
-            else:
-                # Check other person doesn't win next move
-                children = genChildren(nextMove, i, 2)
-                for j in children:
-                    if checkWin(j,i, 2):
-                        continue
-                    else:
-                        possible.append(i)
-    return possible
     
-def countMoves(board,boardnum,player):
-    scores = [0,0]
-    for i in range(1,10):
-        if board[boardnum][i] == player:
-            scores[0] += 1
-        elif board[boardnum][i] == 0:
-            continue
-        else:
-            scores[1] += 1
-    return 2*scores[0]/scores[1] if scores[1] else 0
+#######################################################################
+############################## Heuristic ##############################
+#######################################################################
 
-### NEW HEURISTIC?? Tries to add up everytime ###
-def calc_h(board, currboard, player):
-    us = 0 # we are player 1
+# Returns the heuristic for alpha beta search.
+# Params: board -> 9x9 board state
+# Returns: Heuristic value (Our # wins * Our # board win - their # wins * their # board win)
+def calc_h(board):
+    # us -> number of ways we can win
+    # us_array -> number of boards we can win in
+    us = 0 
     us_array = []
-    them = 0 # they are player 2
+    # them -> number of ways they can win
+    # them_array -> number of boards they can win in
+    them = 0
     them_array = []
+
     for i in range(1,10):
-        # the rows
+        # Us / The rows
         if board[i][1] == board[i][2] == 1 and board[i][3] == 0:
             us += 1
             if i not in us_array:
@@ -258,7 +260,7 @@ def calc_h(board, currboard, player):
             if i not in us_array:
                 us_array.append(i)
 
-        # the cols
+        # Us / The columns
         if board[i][1] == board[i][4] == 1 and board[i][7] == 0:
             us += 1
             if i not in us_array:
@@ -296,7 +298,7 @@ def calc_h(board, currboard, player):
             if i not in us_array:
                 us_array.append(i)
 
-        # diagonals
+        # Us / The diagonals
         if board[i][1] == board[i][5] == 1 and board[i][9] == 0:
             us += 1
             if i not in us_array:
@@ -322,7 +324,7 @@ def calc_h(board, currboard, player):
             if i not in us_array:
                 us_array.append(i)
 
-        # the rows for them
+        # Them / The rows
         if board[i][1] == board[i][2] == 2 and board[i][3] == 0:
             them += 1
             if i not in them_array:
@@ -358,7 +360,7 @@ def calc_h(board, currboard, player):
         if board[i][8] == board[i][9] == 2 and board[i][7] == 0:
             them += 1
 
-        # the cols
+        # Them / The columns
         if board[i][1] == board[i][4] == 2 and board[i][7] == 0:
             them += 1
             if i not in them_array:
@@ -396,7 +398,7 @@ def calc_h(board, currboard, player):
             if i not in them_array:
                 them_array.append(i)
 
-        # diagonals
+        # Them / The diagonals
         if board[i][1] == board[i][5] == 2 and board[i][9] == 0:
             them += 1
             if i not in them_array:
@@ -422,142 +424,15 @@ def calc_h(board, currboard, player):
             if i not in them_array:
                 them_array.append(i)
 
-    if player == 1:
-        return us + 2 - them + 3*(len(us_array) - len(them_array))
-    else:
-        return them - 2 - us + 3*(len(them_array) - len(us_array))
+    return (us*len(us_array)+2) - them*len(them_array)
 
+########################################################################
+########################### End of Heuristic ###########################
+########################################################################
 
-#get a heuristic for a board
-#board is the board we are using
-#current is the current board in board
-#move is the selected move to make
-def getHeuristic(board, prev_board, boardnum, player):    
-    #if this is winning move
-    scoreUs = 0
-    scoreThem = 0
-    if player == 1:      
-        scoreUs += rowColHeuristic(board,prev_board,1)
-        scoreThem += rowColHeuristic(board,boardnum,2)
-
-    else:
-        scoreUs += rowColHeuristic(board,prev_board,2)
-        scoreThem += rowColHeuristic(board,boardnum,1)     
-
-    print ("our board is ", scoreUs, " their ", scoreThem, " in boards ", prev_board, " and ", boardnum)
-
-    return scoreUs - 1.2*scoreThem
-
-def rowColHeuristic(board,boardnum,player):
-
-    score = 0
-    #if calculating heuristic for opponent, then we are the opponent from their perspective
-    if player == 2:
-        opp = 1
-    else:
-        opp = 2
-        
-    #if we win, move is good    
-    if checkWin(board,boardnum,player):
-        return float('inf')
-    elif checkWin(board, boardnum, opp):
-        return -float('inf')
-    elif checkDraw(board,boardnum): #if move results in draw
-        return 0
-    
-    
-    #checking each row for x1 and x2 horizontally for each player
-    adjacent=[0,0] #x2 array for both players 0 is player 1 is opponent
-    single=[0,0] #x1 array for both players
-    for j in range(1,3):
-        for i in ([1,4,7]):  #for each row
-            if board[boardnum][i] == j == board[boardnum][i+1] and board[boardnum][i+2] == 0: #check for X|X|0 
-                adjacent[j-1] += 10
-            elif board[boardnum][i] == j and board[boardnum][i+2] == 0 == board[boardnum][i+1]: #check for X|0|0
-                single[j-1] +=1
-            elif board[boardnum][i+1] == j == board[boardnum][i+2] and  board[boardnum][i] == 0:    #check for 0|X|X
-                adjacent[j-1] += 10
-            elif board[boardnum][i+1] == j and board[boardnum][i] == 0 == board[boardnum][i+2]:    #if the row is 0|X|0
-                single[j-1] += 1
-            elif board[boardnum][i+2] == j and board[boardnum][i] == 0 == board[boardnum][i+1]:  #if row is 0|0|X 
-                single[j-1] += 1            
-            elif board[boardnum][i] == j == board[boardnum][i+2] and board[boardnum][i+1] == 0: # if X|0|X
-                adjacent[j-1] += 10
-        #columns       
-        for i in ([1,2,3]):  #for each column
-            if board[boardnum][i] == j == board[boardnum][i+3] and board[boardnum][i+6] == 0: #check for X|X|0 (in columns)
-                adjacent[j-1] += 10
-            elif board[boardnum][i] == j and board[boardnum][i+3] == 0 == board[boardnum][i+6]: #check for X|0|0
-                single[j-1] +=1
-            elif board[boardnum][i+3] == j == board[boardnum][i+6] and board[boardnum][i] == 0:    #check for 0|X|X
-                adjacent[j-1] +=10
-            elif board[boardnum][i+3] == j and board[boardnum][i] == 0 == board[boardnum][i+6]:    #if is 0|X|0
-                single[j-1] += 1
-            elif board[boardnum][i+6] == j and board[boardnum][i] == 0 == board[boardnum][i+3]:  #if is 0|0|X     
-                single[j-1] += 1  
-            elif board[boardnum][i] == j == board[boardnum][i+6] and board[boardnum][i+3] == 0: # if X|0|X
-                adjacent[j-1] += 10
-    #diagonals
-        if board[boardnum][1] == j == board[boardnum][5] and board[boardnum][9] == 0:
-            adjacent[j-1] += 10
-        elif board[boardnum][1] == j == board[boardnum][9] and board[boardnum][5] == 0:
-            adjacent[j-1] += 10
-        elif board[boardnum][1] == j and board[boardnum][5] == 0 == board[boardnum][9]:
-            single[j-1] += 1
-        elif board[boardnum][1] == 0 and board[boardnum][5] == j == board[boardnum][9]:
-            adjacent[j-1] += 10
-        elif board[boardnum][1] == 0 == board[boardnum][9] and board[boardnum][5] == j:
-            single[j-1] += 1
-        elif board[boardnum][1] == 0 == board[boardnum][5] and board[boardnum][9] == j:
-            single[j-1] += 1
-        if board[boardnum][3] == j == board[boardnum][5] and board[boardnum][7] == 0:
-            adjacent[j-1] += 10
-        elif board[boardnum][3] == j == board[boardnum][7] and board[boardnum][5] == 0:
-            adjacent[j-1] += 10
-        elif board[boardnum][3] == j and board[boardnum][5] == 0 == board[boardnum][7]:
-            single[j-1] += 1
-        elif board[boardnum][3] == 0 and board[boardnum][5] == j == board[boardnum][7]:
-            adjacent[j-1] += 10
-        elif board[boardnum][3] == 0 == board[boardnum][7] and board[boardnum][5] == j:
-            single[j-1] += 1
-        elif board[boardnum][3] == 0 == board[boardnum][5] and board[boardnum][7] == j:
-            single[j-1] += 1
-                
-    #score += 3*adjacent[0] + single[0] - (3*adjacent[1]+single[1])
-
-    if player == 2:
-        score += ((1.2*adjacent[1]) + single[1] - adjacent[0] + single[0])
-    else:
-        score += (adjacent[0] + single[0] - adjacent[1] + single[1])
-
-    return score
-
-
-        
-def getHeuristic2(board, prev_board, boardnum):
-    us = 0
-    them = 0
-    neutral = 0
-    for i in range(1,10):
-        if board[boardnum][i] == 0:
-            neutral += 1
-        elif board[boardnum][i] == 1:
-            us += 1
-        elif board[boardnum][i] == 2:
-            them += 1
-    return 2*us - 3*them + neutral
-
-
-        
-#check if board is a draw    
-def checkDraw(board,boardnum):
-    if not checkWin(board,boardnum,1) and not checkWin(board,boardnum,2):
-        for i in range(1,10):
-            if board[boardnum][i] == 0:
-                return False         
-    return True       
-    
-#check win in one of the boards for a certain player
+# Check if a player wins in a 3x3 board
+# Params: board -> board state, boardnum -> 3x3 board position, player -> which player
+# Returns: bool if win or not
 def checkWin(board,boardnum,player):
     
     if (board[boardnum][1]==board[boardnum][2]==board[boardnum][3]==player or
@@ -570,38 +445,8 @@ def checkWin(board,boardnum,player):
     board[boardnum][3]==board[boardnum][5]==board[boardnum][7]==player):
         return True
     return False
-   
-#generate all children for a board
-def genChildren(board, boardnum, player):
-    # dictionary instead board -> move played
-    children = {}
-    for i in range(1,10):
-        if board[boardnum][i] == 0:
-            child = copy.deepcopy(board)
-            child[boardnum][i] = player
-            children[i] = child
-    return children
-   
-# choose a move to play
-def play2():
-    print_board(boards)
-    goodMoves = chooseMove()
-    if (len(goodMoves)== 1):
-        n = np.bincount(goodMoves).argmax()
-    elif (len(goodMoves)!= 0):
-        n = np.bincount(goodMoves).argmax()
-    # just play a random move for now
-    else: 
-        n = np.random.randint(1,9)
-        while boards[curr][n] != 0:
-            n = np.random.randint(1,9)
-
-    # print("playing", n)
     
-    place(curr, n, 1)
-    return n
-
-# place a move in the global boards
+# Place a move in one of the 3x3 boards
 def place(board, num, player):
     global num_moves_made
     global depth_limit
@@ -614,8 +459,8 @@ def place(board, num, player):
         depth_limit += 2
         num_moves_made = 0
 
-# read what the server sent us and
-# only parses the strings that are necessary
+# Read what the server sent us and
+# Only parses the strings that are necessary
 def parse(string):
     if "(" in string:
         command, args = string.split("(")
@@ -644,7 +489,7 @@ def parse(string):
         return -1
     return 0
 
-# connect to socket
+# Connect to socket
 def main():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     port = int(sys.argv[2]) # Usage: ./agent.py -p (port)
