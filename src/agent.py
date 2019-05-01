@@ -27,7 +27,7 @@ boards = np.zeros((10, 10), dtype="int8")
 s = [".","X","O"]
 curr = 0 # this is the current board to play in
 
-depth_limit = 4 # Max depth iterate too
+depth_limit = 6 # Max depth iterate too
 
 
 # print a row
@@ -90,11 +90,13 @@ def calc_min(board, move, alpha, beta, depth, curr_move):
         #return getHeuristic(board, curr_move, move, 1)
         return calc_h(board, move, 1)
 
-    children = genChildren(board, move, 2)
+    children = possibleMoves(board, move)
     depth += 1
-    for moveTile, child in children.items():
-        eval = calc_max(child, moveTile, alpha, beta, depth, move)
+    for child in children:
+        board[move][child] = 2
+        eval = calc_max(board, child, alpha, beta, depth, move)
         beta = min(beta, eval)
+        board[move][child] = 0
         if beta <= alpha:
             break
         
@@ -110,15 +112,25 @@ def calc_max(board, move, alpha, beta, depth, curr_move):
         #return getHeuristic(board, curr_move, move, 2)
         return calc_h(board, move, 2)
 
-    children = genChildren(board, move, 1)
+    children = possibleMoves(board, move)
     depth += 1
-    for moveTile, child in children.items():
-        eval = calc_min(child, moveTile, alpha, beta, depth, move)
+    for child in children:
+        board[move][child] = 1
+        eval = calc_min(board, child, alpha, beta, depth, move)
         alpha = max(alpha, eval)
+        board[move][child] = 0
         if beta <= alpha:
             break      
     return alpha
-
+def possibleMoves(board,boardnum):
+    # dictionary instead board -> move played
+    moves = {}
+    for i in range(1,10):
+        if board[boardnum][i] == 0:
+            moves[i] = i
+    return moves
+    
+    
 def play():
     global boards
     print_board(boards)
