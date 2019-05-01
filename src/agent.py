@@ -615,7 +615,7 @@ def place(board, num, player):
     boards[board][num] = player
     num_moves_made += 1
 
-    if num_moves_made > 20:
+    if num_moves_made > 25:
         depth_limit += 2
         num_moves_made = 0
 
