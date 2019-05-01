@@ -26,7 +26,7 @@ import random
 boards = np.zeros((10, 10), dtype="int8")
 s = [".","X","O"]
 curr = 0 # this is the current board to play in
-
+num_moves_made = 0
 depth_limit = 5 # Max depth iterate too
 
 
@@ -212,6 +212,7 @@ def countMoves(board,boardnum,player):
         else:
             scores[1] += 1
     return 2*scores[0]/scores[1] if scores[1] else 0
+
 ### NEW HEURISTIC?? Tries to add up everytime ###
 def calc_h(board, currboard, player):
     us = 0 # we are player 1
@@ -607,9 +608,16 @@ def play2():
 
 # place a move in the global boards
 def place(board, num, player):
+    global num_moves_made
+    global depth_limit
     global curr
     curr = num
     boards[board][num] = player
+    num_moves_made += 1
+
+    if num_moves_made > 20:
+        depth_limit += 2
+        num_moves_made = 0
 
 # read what the server sent us and
 # only parses the strings that are necessary
