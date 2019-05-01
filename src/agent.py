@@ -422,9 +422,9 @@ def calc_h(board, currboard, player):
                 them_array.append(i)
 
     if player == 1:
-        return us + 1 - them + 3*(len(us_array) - len(them_array))
+        return us + 2 - them + 3*(len(us_array) - len(them_array))
     else:
-        return them - 1 - us + 3*(len(them_array) - len(us_array))
+        return them - 2 - us - 3*(len(them_array) - len(us_array))
 
 #get a heuristic for a board
 #board is the board we are using
