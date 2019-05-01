@@ -27,7 +27,7 @@ boards = np.zeros((10, 10), dtype="int8")
 s = [".","X","O"]
 curr = 0 # this is the current board to play in
 
-depth_limit = 6 # Max depth iterate too
+depth_limit = 5 # Max depth iterate too
 
 
 # print a row
@@ -66,16 +66,18 @@ def alphabeta(board):
     alpha = -float('inf')
     beta = float('inf')
 
-    children = genChildren(board, curr, 1)
+    children = possibleMoves(board, curr)
     depth += 1
     nextMove = 0
-    for moveTile, child in children.items():
-        eval = calc_min(child, moveTile, alpha, beta, depth, curr)
-        print ("Move Tile is:", moveTile)
+    for child in children:
+        board[curr][child] = 1
+        eval = calc_min(board, child, alpha, beta, depth, curr)
+        board[curr][child] = 0
+        print ("Move Tile is:", child)
         print ("Evaluation is:", eval)
         if eval > alpha:
             alpha = eval
-            nextMove = moveTile
+            nextMove = child
 
     print ("whats my next move?", nextMove, " in board ", curr)
     return nextMove # this returns the next move to make
